@@ -4,14 +4,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] text-[13px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 disabled:pointer-events-none disabled:opacity-50 active:scale-[.985]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] text-[13px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--primary-soft)] disabled:pointer-events-none disabled:opacity-50 active:scale-[.985]",
   {
     variants: {
       variant: {
-        default: "bg-[#494ce5] text-white shadow-[0_2px_7px_rgba(67,71,205,.16)] hover:bg-[#3e40cf]",
-        secondary: "border border-[#e8eaf0] bg-white text-[#25283b] hover:bg-[#f6f7fa]",
-        ghost: "text-[#555e73] hover:bg-[#f0f2f7] hover:text-[#1d2433]",
-        destructive: "text-[#d34354] hover:bg-[#fff0f1]",
+        default: "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[0_2px_7px_rgba(209,36,79,.18)] hover:bg-[var(--primary-hover)]",
+        secondary: "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--surface-tinted)]",
+        ghost: "text-[var(--muted-foreground)] hover:bg-[var(--surface-tinted)] hover:text-[var(--foreground)]",
+        destructive: "text-[var(--destructive)] hover:bg-[var(--destructive-subtle)]",
       },
       size: { default: "h-10 px-4", sm: "h-8 px-3", icon: "size-9" },
     },

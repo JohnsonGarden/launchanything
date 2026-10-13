@@ -78,3 +78,7 @@ macOS CI runs TypeScript tests, Rust tests, Swift compilation, and frontend buil
 LaunchAnything configures **process startup**, not arbitrary kernel-level traffic capture. Native apps using `Network.framework`, embedded URLSession sessions, direct sockets or proprietary networking may ignore the settings. True transparent per-app routing would require a separately specified and permissioned Network Extension/TUN implementation. See `docs/specs/001-mvp.md` for deferred capabilities.
 
 MIT © 2026 JohnsonGarden contributors.
+
+## Appearance and languages
+
+The warm rose color system is derived from the project owner's MiMo TTS reference screenshots and defined through semantic Tailwind/shadcn tokens (`src/styles.css`). The UI supports Simplified Chinese and English: use the **中文 / EN** switch in the top-right. It defaults to the macOS UI language on first launch and remembers the choice locally; no proxy settings are changed by switching languages. See `docs/specs/002-rose-theme-bilingual.md`.
