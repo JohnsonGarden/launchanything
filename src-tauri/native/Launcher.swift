@@ -47,7 +47,12 @@ if !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isE
 }
 
 let configuration = NSWorkspace.OpenConfiguration()
-configuration.environment = request.environment
+var environment = request.environment
+// LaunchServices inherits omitted keys; empty values prevent stale parent proxy settings.
+for key in ["HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "all_proxy", "no_proxy"] {
+    if environment[key] == nil { environment[key] = "" }
+}
+configuration.environment = environment
 configuration.arguments = request.arguments
 configuration.activates = true
 configuration.createsNewApplicationInstance = true

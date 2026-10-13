@@ -111,4 +111,29 @@ mod tests {
         assert!(plan.environment.is_empty());
         assert_eq!(plan.arguments[0], "--proxy-server=http://127.0.0.1:7890");
     }
+
+    #[test]
+    fn protocol_matrix_preserves_generic_socks5h_and_exact_chromium_schemes() {
+        for (scheme, env_url, flag) in [
+            (ProxyScheme::Http, "http://127.0.0.1:10808", "--proxy-server=http://127.0.0.1:10808"),
+            (ProxyScheme::Socks5, "socks5h://127.0.0.1:10808", "--proxy-server=socks5://127.0.0.1:10808"),
+        ] {
+            let mut profile = profile();
+            profile.scheme = scheme;
+            profile.port = 10808;
+            profile.bypass.clear();
+            for mode in [LaunchMode::Environment, LaunchMode::Chromium, LaunchMode::Combined] {
+                let plan = build_launch_plan(&profile, &mode).unwrap();
+                if mode == LaunchMode::Chromium {
+                    assert!(plan.environment.is_empty());
+                } else {
+                    assert_eq!(plan.environment.len(), 6);
+                    for key in ["HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"] {
+                        assert_eq!(plan.environment[key], env_url);
+                    }
+                }
+                assert_eq!(plan.arguments, if mode == LaunchMode::Environment { vec![] } else { vec![flag] });
+            }
+        }
+    }
 }

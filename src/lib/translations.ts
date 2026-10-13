@@ -95,6 +95,7 @@ export const en = {
   "appForm.quitting": "Quit the target app before launching it here. An already-running instance could silently reuse its previous network settings, so LaunchAnything blocks that case.",
   "appForm.save": "Save application",
   "appForm.saved": "Application saved",
+  "appForm.socksCompatibility": "SOCKS5 environment URLs use socks5h:// for compatible clients. Some Electron components reject this with ERR_NO_SUPPORTED_PROXIES. If your proxy has a verified HTTP/mixed listener, choose an HTTP profile. Chromium flags alone do not configure child processes; check their own logs separately.",
   "mode.environment": "Environment",
   "mode.chromium": "Chromium flags",
   "mode.combined": "Combined",
@@ -131,6 +132,7 @@ export type MessageKey = keyof typeof en;
 export type Locale = "zh-CN" | "en";
 
 export const zhCN: Record<MessageKey, string> = {
+  "appForm.socksCompatibility": "SOCKS5 环境变量使用 socks5h://，供兼容客户端解析远程域名。部分 Electron 组件会报 ERR_NO_SUPPORTED_PROXIES。若代理提供已验证的 HTTP/混合监听端口，请选择 HTTP 配置。仅传 Chromium 参数不会配置子进程；请另查子进程日志。",
   "nav.workspace": "工作台", "nav.preferences": "偏好设置", "nav.apps": "应用启动", "nav.proxies": "代理配置", "nav.about": "关于与安全", "nav.breadcrumb": "工作台", "nav.local": "本地优先", "nav.language": "语言", "nav.english": "English", "nav.chinese": "简体中文",
   "privacy.title": "隐私优先", "privacy.detail": "所有配置仅保存在你的 Mac 上，无需账户，也不会上传云端或收集使用数据。",
   "status.loadError": "无法读取配置。",

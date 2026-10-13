@@ -15,6 +15,12 @@ import { Field } from "./ProxyEditor";
 interface Props { open: boolean; initial?: AppEntry | null; profiles: ProxyProfile[]; onOpenChange: (next: boolean) => void; onSave: (entry: AppEntry) => Promise<void> }
 const blank = (profiles: ProxyProfile[]): AppEntry => ({ id: crypto.randomUUID(), name: "", appPath: "", profileId: profiles[0]?.id ?? "", mode: "environment" });
 
+export function ProxyCompatibilityNotice({ scheme, mode }: { scheme?: ProxyProfile["scheme"]; mode: LaunchMode }) {
+  const { t } = useI18n();
+  if (scheme !== "socks5" || mode === "chromium") return null;
+  return <p role="note" className="rounded-xl border border-[var(--border)] bg-[var(--surface-tinted)] p-3 text-[12px] leading-relaxed text-[var(--muted-foreground)]">{t("appForm.socksCompatibility")}</p>;
+}
+
 export function AppEditor({ open, initial, profiles, onOpenChange, onSave }: Props) {
   const { t } = useI18n();
   const [form, setForm] = useState<AppEntry>(() => blank(profiles));
@@ -46,6 +52,7 @@ export function AppEditor({ open, initial, profiles, onOpenChange, onSave }: Pro
       <Field label={t("appForm.displayName")}><Input autoComplete="off" placeholder={t("appForm.namePlaceholder")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}/></Field>
       <Field label={t("appForm.profile")}><select className="field-select" value={form.profileId} onChange={(e) => setForm({ ...form, profileId: e.target.value })}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name} · {profile.scheme.toUpperCase()}</option>)}</select></Field>
       <Field label={t("appForm.method")}><div className="grid grid-cols-3 gap-2">{(["environment", "chromium", "combined"] as LaunchMode[]).map((mode) => <button key={mode} type="button" onClick={() => setForm({ ...form, mode })} className={`rounded-[10px] border px-2.5 py-3 text-center text-[11px] font-semibold transition-colors ${form.mode === mode ? "border-[var(--ring)] bg-[var(--primary-subtle)] text-[var(--primary)]" : "border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--primary-subtle)]"}`}>{t(`mode.${mode}`)}</button>)}</div><p className="mt-2 text-[11px] leading-relaxed text-[var(--soft-foreground)]">{t(`mode.${form.mode}Detail`)}</p></Field>
+      <ProxyCompatibilityNotice scheme={profiles.find(profile => profile.id === form.profileId)?.scheme} mode={form.mode}/>
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-tinted)] p-3 text-[12px] leading-relaxed text-[var(--muted-foreground)]">{t("appForm.quitting")}</div>
       <div className="flex justify-end border-t border-[var(--border-subtle)] pt-5"><Button disabled={busy || profiles.length === 0} type="submit">{busy ? <LoaderCircle size={15} className="animate-spin"/> : <ArrowRight size={15}/>} {t("appForm.save")}</Button></div>
     </form>

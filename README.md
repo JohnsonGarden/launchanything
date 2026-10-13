@@ -79,6 +79,15 @@ The macOS prepare script creates app icons and compiles the Swift LaunchServices
 
 SOCKS5 environment URLs use `socks5h://` for clients supporting remote DNS. Proxy bypass is application-dependent. No proxy credential storage is provided in v0.1.
 
+Some Electron components read `HTTPS_PROXY` and pass it to Electron's proxy API,
+which does not accept `socks5h://`, even when Chromium flags are also present.
+Use an independently verified HTTP/mixed listener with an HTTP profile for those
+apps. Chromium-only mode clears inherited proxy variables; its flags do not
+configure independent child processes. Omitted bypass variables are also cleared,
+so an empty bypass list does not reuse the launching terminal's settings.
+See [Antigravity diagnosis / 代理诊断](docs/antigravity-proxy.md) for the separate
+updater compatibility and Agent location-rejection findings.
+
 ## Engineering
 
 - [Product spec & acceptance criteria](docs/specs/001-mvp.md) — SDD contract
@@ -93,6 +102,7 @@ npm run test:doctor
 npm run typecheck
 npm test
 npm run test:rust
+npm run test:macos-launch
 ```
 
 macOS CI runs TypeScript tests, Rust tests, Swift compilation, and frontend build. Linux-only development hosts cannot build or exercise the macOS-specific helper; please do not mistake a static review for a verified macOS runtime test.

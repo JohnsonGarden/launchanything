@@ -32,6 +32,8 @@ jobs:
         run: npm test
       - name: Compile native macOS helper and icons
         run: npm run prepare:macos
+      - name: Verify native launch environment and arguments
+        run: npm run test:macos-launch
       - name: Rust tests
         run: npm run test:rust
       - name: Build frontend
