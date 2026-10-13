@@ -38,9 +38,9 @@ export function diagnose({ platform, nodeMajor, cargo, rustc, swiftc }) {
   }
   if (swiftc.state !== "ok") issues.push({
     code: "swift",
-    message: "未发现可用的 macOS Swift 编译器 / Swift compiler unavailable.
+    message: `未发现可用的 macOS Swift 编译器 / Swift compiler unavailable.
   安装开发工具 / Install Xcode Command Line Tools: xcode-select --install
-  确认 / Verify: xcrun --find swiftc",
+  确认 / Verify: xcrun --find swiftc`,
   });
   return issues;
 }
