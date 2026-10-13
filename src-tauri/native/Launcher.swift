@@ -23,7 +23,7 @@ private func emit(_ result: Response, exitCode: Int32) -> Never {
     exit(exitCode)
 }
 
-let request: Request
+private let request: Request
 do {
     request = try JSONDecoder().decode(Request.self, from: FileHandle.standardInput.readDataToEndOfFile())
 } catch {
