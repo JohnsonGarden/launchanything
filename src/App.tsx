@@ -9,6 +9,7 @@ import { api, errorMessage } from "@/lib/api";
 import type { AppEntry, AppState, ProxyProfile } from "@/lib/models";
 import { displayEndpoint } from "@/lib/validation";
 import { useI18n } from "@/lib/i18n";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -104,10 +105,7 @@ export default function App() {
 
     <main className="main-panel">
       <header className="topbar"><div className="flex items-center gap-2 text-[12px] font-medium text-[var(--soft-foreground)]">{t("nav.breadcrumb")} <ChevronRight size={13}/> <span className="text-[var(--foreground)]">{view === "apps" ? t("nav.apps") : view === "proxies" ? t("nav.proxies") : t("nav.about")}</span></div><div className="topbar-actions">
-        <div className="language-switch" role="group" aria-label={t("nav.language")}>
-          <button type="button" lang="zh-CN" aria-label={t("nav.chinese")} aria-pressed={locale === "zh-CN"} className={locale === "zh-CN" ? "language-active" : ""} onClick={() => setLocale("zh-CN")}>中文</button>
-          <button type="button" lang="en" aria-label={t("nav.english")} aria-pressed={locale === "en"} className={locale === "en" ? "language-active" : ""} onClick={() => setLocale("en")}>EN</button>
-        </div>
+        <LanguageSwitch locale={locale} onChange={setLocale} label={t("nav.language")} chineseLabel={t("nav.chinese")} englishLabel={t("nav.english")}/>
         <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--muted-foreground)]"><span className="size-1.5 rounded-full bg-[var(--success)]"/> {t("nav.local")}</div>
       </div></header>
       <div className="main-content">

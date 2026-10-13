@@ -62,9 +62,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "SF Pro Text", "Helvetica Neue", sans-serif;
 }
-:root { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; color: var(--foreground); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+:root { font-family: var(--font-sans); color: var(--foreground); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+:root:lang(zh-CN) { font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+:root:lang(zh-CN) h1 { letter-spacing: -.025em; }
+button, input, select, textarea { font-family: inherit; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 760px; background: var(--background); }
 button { cursor: pointer; }
@@ -120,10 +123,27 @@ h1 { margin-top: 10px; font-size: 36px; line-height: 1.15; font-weight: 720; let
 .field-select:focus { border-color: var(--ring); box-shadow: 0 0 0 3px var(--primary-subtle); }
 @media (max-width: 1020px) { .main-content { padding: 35px 27px 42px; } .topbar { padding: 0 27px; } .sidebar { width: 212px; } .stats-grid { gap: 10px; } .summary-card { padding: 18px; } .app-row { padding: 12px; gap: 10px; } }
 
-/* Accessible, persistent language selection; native shadcn button/spacing system retained. */
-.topbar-actions { display: flex; align-items: center; gap: 20px; }
-.language-switch { display: inline-flex; align-items: center; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-tinted); gap: 2px; }
-.language-switch button { min-width: 38px; height: 27px; padding: 0 8px; border-radius: 7px; color: var(--muted-foreground); font-size: 11px; font-weight: 650; transition: background .15s ease, color .15s ease, box-shadow .15s ease; }
-.language-switch button.language-active { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgba(89,39,60,.10); }
-.language-switch button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* Accessible shadcn-style language segment. Reset native button UA styling so
+   static previews and Tauri WebKit render the same control silhouette. */
+.topbar-actions { display: flex; align-items: center; gap: 18px; }
+.language-switch {
+  display: inline-flex; align-items: center; gap: 3px; height: 36px;
+  padding: 3px 4px 3px 10px; border: 1px solid var(--border);
+  border-radius: 999px; background: var(--surface-tinted);
+  box-shadow: 0 1px 2px rgba(82, 38, 57, .035);
+  white-space: nowrap;
+}
+.language-switch-icon { flex: none; margin-right: 3px; color: var(--muted-foreground); }
+.language-switch .language-option {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  height: 28px; min-width: 43px; padding: 0 11px; border-radius: 999px;
+  font-family: inherit; font-size: 12px; line-height: 1; font-weight: 600; color: var(--muted-foreground);
+  cursor: pointer; transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.language-switch .language-option:hover:not([aria-pressed="true"]) { background: var(--primary-subtle); color: var(--primary-contrast); }
+.language-switch .language-option[aria-pressed="true"] {
+  background: var(--primary-soft); color: var(--primary-contrast);
+  box-shadow: inset 0 0 0 1px rgba(196, 105, 139, .16), 0 1px 3px rgba(82, 38, 57, .08);
+}
+.language-switch .language-option:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 @media (max-width: 900px) { .topbar-actions { gap: 10px; } .topbar-actions > div:last-child { display: none; } }

@@ -34,3 +34,11 @@ The product owner supplied two screenshots of the previous MiMo TTS project as t
 Automated tests: locale detection, persistence preference precedence, key parity, dynamic message formatting, bilingual validation messages; existing app validation/unit tests; TypeScript typecheck; frontend build; Swift/Rust CI regression.
 
 Manual macOS checks still required for live Tauri webview rendering, system locale behavior and app networking. Browser/static previews are not substitutes for actual macOS smoke testing.
+
+## Visual refinement: segmented language control and macOS fonts
+
+- Header locale selection is a subtle **rose pill/segmented control**, with a language icon, no native browser button borders, and an unmistakable selected state. Both choices remain keyboard-focusable buttons with `aria-pressed`.
+- `zh-CN` uses the installed macOS **PingFang SC** font first, with macOS/Chinese system fallbacks. No bundled third-party Chinese fonts, KaiTi, calligraphy, or decorative font substitution.
+- The English interface retains macOS system typography. Form controls inherit the active UI font.
+- Chinese main headings use language-appropriate tracking (avoid Latin-style aggressive negative letter spacing).
+- Automated coverage includes structural/a11y assertions for both segment states. Visually verify at native desktop size; a standalone static HTML preview must not be misrepresented as a native Tauri screenshot.
