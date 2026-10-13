@@ -64,7 +64,7 @@
   --color-ring: var(--ring);
   --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "SF Pro Text", "Helvetica Neue", sans-serif;
 }
-:root { font-family: var(--font-sans); color: var(--foreground); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+:root { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif; color: var(--foreground); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 :root:lang(zh-CN) { font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
 :root:lang(zh-CN) h1 { letter-spacing: -.025em; }
 button, input, select, textarea { font-family: inherit; }
