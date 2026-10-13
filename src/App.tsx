@@ -6,6 +6,7 @@ import {
   Pencil, Play, Plus, Radio, Search, Settings2, ShieldCheck, Sparkles, Trash2, Waypoints,
 } from "lucide-react";
 import { api, errorMessage } from "@/lib/api";
+import { isNativeBridgeUnavailableError } from "@/lib/nativeBridge";
 import type { AppEntry, AppState, ProxyProfile } from "@/lib/models";
 import { displayEndpoint } from "@/lib/validation";
 import { useI18n } from "@/lib/i18n";
@@ -27,14 +28,14 @@ export default function App() {
   const [appEditor, setAppEditor] = useState<{ open: boolean; initial: AppEntry | null }>({ open: false, initial: null });
   const [proxyEditor, setProxyEditor] = useState<{ open: boolean; initial: ProxyProfile | null }>({ open: false, initial: null });
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ kind: "runtime" | "backend"; detail: string } | null>(null);
   const [launching, setLaunching] = useState<string | null>(null);
   const [checking, setChecking] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
 
   const reload = useCallback(async () => {
     try { setState(await api.loadState()); setLoadError(null); }
-    catch (error) { setLoadError(errorMessage(error)); }
+    catch (error) { setLoadError({ kind: isNativeBridgeUnavailableError(error) ? "runtime" : "backend", detail: errorMessage(error) }); }
     finally { setLoading(false); }
   }, []);
 
@@ -109,8 +110,16 @@ export default function App() {
         <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--muted-foreground)]"><span className="size-1.5 rounded-full bg-[var(--success)]"/> {t("nav.local")}</div>
       </div></header>
       <div className="main-content">
-        {loadError && <div className="mb-5 rounded-xl border border-[var(--destructive)] bg-[var(--destructive-subtle)] p-4 text-sm text-[var(--destructive)]"><strong>{t("status.loadError")}</strong> {loadError} <button className="ml-2 underline" onClick={() => void reload()}>{t("common.retry")}</button></div>}
-        {view === "apps" && <>
+        {loadError && <div role="alert" className="mb-6 flex items-start justify-between gap-4 rounded-xl border border-[var(--destructive)] bg-[var(--destructive-subtle)] p-4 text-sm text-[var(--destructive)]">
+          <div className="min-w-0">
+            <strong>{t(loadError.kind === "runtime" ? "status.runtimeTitle" : "status.loadError")}</strong>
+            {loadError.kind === "runtime"
+              ? <p className="mt-2 max-w-[680px] leading-relaxed">{t("status.runtimeHint")}</p>
+              : <span className="ml-2 break-words">{loadError.detail}</span>}
+          </div>
+          <Button variant="secondary" size="sm" className="shrink-0" onClick={() => void reload()}>{t("common.retry")}</Button>
+        </div>}
+        {!loadError && view === "apps" && <>
           <div className="page-intro"><div><div className="eyebrow"><Sparkles size={13}/> {t("apps.eyebrow")}</div><h1>{t("nav.apps")}<span className="period">.</span></h1><p>{t("apps.tagline")}</p></div><Button onClick={() => showAppEditor()} disabled={!!loadError}><Plus size={16}/> {t("apps.add")}</Button></div>
           <div className="stats-grid"><Summary icon={Blocks} label={t("apps.configured")} value={state.apps.length.toString()} detail={t("apps.configuredDetail")}/><Summary icon={Globe2} label={t("apps.profilesStat")} value={state.profiles.length.toString()} detail={t("apps.profilesStatDetail")}/><Summary icon={LockKeyhole} label={t("apps.routingStat")} value={t("apps.routingStatValue")} detail={t("apps.routingStatDetail")}/></div>
           <div className="section-heading"><div><h2>{t("apps.yours")} <span className="section-count">{state.apps.length}</span></h2><p>{t("apps.remember")}</p></div><SearchBox value={query} onChange={setQuery}/></div>
@@ -126,7 +135,7 @@ export default function App() {
           })}</div> : <Empty title={state.apps.length && query ? t("apps.emptySearch") : t("apps.emptyTitle")} description={state.apps.length && query ? t("apps.emptySearchDetail") : t("apps.emptyDetail")} action={state.apps.length && query ? t("apps.clearSearch") : t("apps.addFirst")} onClick={() => state.apps.length && query ? setQuery("") : showAppEditor()}/>} 
           <div className="help-strip"><div className="help-strip-icon"><Activity size={18}/></div><div><strong>{t("apps.routingTitle")}</strong><p>{t("apps.routingDetail")}</p></div><button onClick={() => setView("about")} className="ml-auto flex shrink-0 items-center gap-1 text-[12px] font-semibold text-[var(--primary)] hover:underline">{t("common.learnMore")} <ArrowRight size={13}/></button></div>
         </>}
-        {view === "proxies" && <>
+        {!loadError && view === "proxies" && <>
           <div className="page-intro"><div><div className="eyebrow"><Radio size={13}/> {t("proxy.eyebrow")}</div><h1>{t("nav.proxies")}<span className="period">.</span></h1><p>{t("proxy.tagline")}</p></div><Button onClick={() => showProxyEditor()} disabled={!!loadError}><Plus size={16}/> {t("proxy.new")}</Button></div>
           <div className="section-heading mt-8"><div><h2>{t("proxy.saved")} <span className="section-count">{state.profiles.length}</span></h2><p>{t("proxy.savedDetail")}</p></div><SearchBox value={query} onChange={setQuery}/></div>
           {loading ? <Loading/> : filteredProfiles.length ? <div className="proxy-grid">{filteredProfiles.map((profile) => <div className="proxy-card" key={profile.id}>
