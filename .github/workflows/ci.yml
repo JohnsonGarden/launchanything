@@ -22,6 +22,10 @@ jobs:
           workspaces: src-tauri -> target
       - name: Install JavaScript dependencies
         run: npm install --no-audit --no-fund
+      - name: Developer preflight unit tests
+        run: npm run test:doctor
+      - name: Developer environment preflight
+        run: npm run doctor
       - name: Typecheck
         run: npm run typecheck
       - name: Frontend tests

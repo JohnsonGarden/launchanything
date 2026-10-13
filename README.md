@@ -21,15 +21,37 @@
 - A **separate, running proxy client** exposing an HTTP or SOCKS5 TCP listening port, e.g. Shadowrocket or Clash.
 - App runs **outside the App Sandbox**: Apple documents that sandboxed callers cannot pass `OpenConfiguration.environment`. The project does not request network interception entitlements.
 
-## Get started
+## Get started (macOS)
+
+Before installing Node dependencies, make sure your Mac has **Node.js 22+**, the **Rust stable toolchain** (Cargo + rustc), and **Xcode Command Line Tools**. Tauri needs all three; an error containing `cargo metadata ... No such file or directory` most commonly means `cargo` is missing or not on your `PATH`.
 
 ```bash
+# macOS Swift compiler; skip if already installed
+xcode-select --install
+
+# Official Rustup installer; follow the default interactive prompts
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+
+# Confirm native prerequisites
+cargo --version
+rustc --version
+xcrun --find swiftc
+
 git clone https://github.com/JohnsonGarden/launchanything.git
 cd launchanything
-git checkout dev # after this change is merged
+git switch feat/macos-proxy-launcher-mvp  # while PR #1 is still under review
+
 npm install
+npm run doctor
 npm run dev
 ```
+
+`npm run dev` and `npm run build` run the environment check automatically. No elevated privileges are needed for the check itself.
+
+**Already cloned the repo?** Stay in its directory, install Rust and `source "$HOME/.cargo/env"`, then retry `npm run dev`. No need to reinstall npm dependencies.
+
+**Common non-errors:** `npm install` may create an untracked `package-lock.json`—it does not cause Cargo errors, and `git add` without a path simply stages nothing. An npm `allow-scripts` warning is separate; review individual packages before approving any install scripts. If a later Vite/esbuild command fails due to blocked postinstall scripts, investigate that independently.
 
 To build an `.app` / `.dmg` on your Mac:
 
@@ -66,6 +88,8 @@ SOCKS5 environment URLs use `socks5h://` for clients supporting remote DNS. Prox
 - [Contributor & agent guidelines](AGENTS.md)
 
 ```bash
+npm run doctor
+npm run test:doctor
 npm run typecheck
 npm test
 npm run test:rust

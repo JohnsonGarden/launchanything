@@ -12,7 +12,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml"
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "doctor": "node scripts/doctor.mjs",
+    "predev": "npm run doctor",
+    "prebuild": "npm run doctor",
+    "test:doctor": "node --test scripts/doctor.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",
