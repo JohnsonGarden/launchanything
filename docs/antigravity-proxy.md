@@ -12,6 +12,8 @@ Do not confuse these bundles or their log directories.
 | Agent LS at 19:05:54 and 19:08:41: `FAILED_PRECONDITION (code 400): User location is not supported for the API use.` | The authenticated Agent workflow was rejected by the service for location. This is independent of updater failure; exact eligibility/routing cause is unresolved. / 真实 Agent 请求被服务端以地区原因拒绝，具体判断依据仍未确定。 |
 | curl via SOCKS5: valid TLS, API root 404 | Basic reachability only, not Agent success. / 仅证明基础连通，不证明 Agent 可用。 |
 | Anonymous HTTP and SOCKS5 trace via 10808: country US | The listener supports both protocols and this trace used a US exit. Different destinations can follow different routing rules. / 该端口支持两种协议；这个测试的美国出口不代表所有目的地同一出口。 |
+| User reports the same account works on another computer using the same proxy IP | A general account/IP rejection is not established. Compare the exact product/version, model, API destination and proxy mode between computers. / 同账号、同代理 IP 的成功对照不能支持笼统的账号或出口不可用结论，应比较产品版本、模型、API 目的地与代理方式。 |
+| Local xray configuration: mixed listener on 10808, `geosite:google` routes to the proxy outbound | Supports trying HTTP on the existing listener. Configured routing is not evidence of the failed request's actual route. / 已有端口可用于 HTTP 对照；配置规则不等于失败请求的实际路由证据。 |
 | Six established loopback proxy connections, no non-loopback established connections in the inspected target process snapshot | Supports proxy use at that instant; not comprehensive traffic capture or proof of the failed request's route. / 支持当时存在代理连接，不等于完整流量证明。 |
 | Native fixture with poisoned parent variables | Empty Swift environment previously inherited all proxy keys. The fix blanks omitted keys and preserves explicit requests. / 修复前空环境仍继承代理变量，现显式清空未指定键。 |
 
@@ -29,10 +31,12 @@ cookies, credential files, raw logs or user workspaces are included here.
 3. Send `Hi`, note the timestamp, and inspect the new session's **main.log** and
    **ls-main.log** independently. Updater success does not close the Agent issue.
    发送 Hi 后分别检查新会话更新器与 Agent 日志。
-4. If the same location rejection persists, investigate the actual API
-   destination's proxy routing and service/account eligibility. Do not change
-   tokens, disable TLS verification, or infer success from an IP-check website.
-   若地区拒绝持续，核查 API 目的地路由与服务/账号适用条件。
+4. If the same location rejection persists, compare the working computer's
+   exact product/version, model, API destination and proxy mode, then investigate
+   destination-specific routing. A shared proxy IP does not prove both requests
+   took the same route. Do not change tokens, disable TLS verification, or infer
+   success from an IP-check website. / 若地区拒绝持续，先对比成功电脑的产品版本、
+   模型、API 目的地与代理方式，再核查请求实际路由；相同代理 IP 不代表请求路径相同。
 
 For this IDE, logs live under
 `~/Library/Application Support/Antigravity IDE/logs/`, not `Antigravity/logs/`.
