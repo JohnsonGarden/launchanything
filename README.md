@@ -1,0 +1,2 @@
+# launchanything
+launchanythingmacosappviaagent
