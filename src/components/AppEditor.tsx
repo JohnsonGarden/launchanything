@@ -6,13 +6,14 @@ import { errorMessage } from "@/lib/api";
 import type { AppEntry, LaunchMode, ProxyProfile } from "@/lib/models";
 import { appDisplayName, detectPlatform, validateApp } from "@/lib/validation";
 
-const currentPlatform = detectPlatform(typeof navigator === "undefined" ? "" : navigator.userAgent);
 import { useI18n } from "@/lib/i18n";
 import { translatedValidationError } from "@/lib/validationI18n";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Field } from "./ProxyEditor";
+
+const currentPlatform = detectPlatform(typeof navigator === "undefined" ? "" : navigator.userAgent);
 
 interface Props { open: boolean; initial?: AppEntry | null; profiles: ProxyProfile[]; onOpenChange: (next: boolean) => void; onSave: (entry: AppEntry) => Promise<void> }
 const blank = (profiles: ProxyProfile[]): AppEntry => ({ id: crypto.randomUUID(), name: "", appPath: "", profileId: profiles[0]?.id ?? "", mode: "environment" });

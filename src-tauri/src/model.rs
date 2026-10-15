@@ -102,7 +102,7 @@ pub fn validate_app(entry: &AppEntry) -> Result<(), String> {
     validate_label(&entry.id, "Application ID", 100)?;
     validate_label(&entry.name, "Application name", 70)?;
     validate_label(&entry.profile_id, "Proxy profile ID", 100)?;
-    if entry.app_path.contains('\\0') {
+    if entry.app_path.bytes().any(|b| b == 0) {
         return Err("Application path contains an invalid NUL byte.".into());
     }
     #[cfg(target_os = "macos")]
@@ -112,7 +112,7 @@ pub fn validate_app(entry: &AppEntry) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         let path = std::path::Path::new(&entry.app_path);
-        if !path.is_absolute() || entry.app_path.starts_with(r"\\\\") || !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
+        if !path.is_absolute() || entry.app_path.as_bytes().first() == Some(&92) || !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
             return Err("Select an absolute path to a Windows .exe application.".into());
         }
     }

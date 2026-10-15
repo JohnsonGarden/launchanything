@@ -17,7 +17,8 @@ export function detectPlatform(userAgent: string): TargetPlatform {
 export function validateApp(entry: AppEntry, platform: TargetPlatform = "macos"): string | null {
   if (!entry.name.trim() || entry.name.trim().length > 70) return "Enter an application name (up to 70 characters).";
   if (platform === "windows") {
-    if (!/^[A-Za-z]:\\\\/.test(entry.appPath) || !/\\.exe$/i.test(entry.appPath)) {
+    if (!/^[A-Za-z]:/.test(entry.appPath) || entry.appPath[2] !== String.fromCharCode(92)
+      || !entry.appPath.toLowerCase().endsWith(".exe")) {
       return "Choose an absolute path to a Windows .exe application.";
     }
   } else if (!entry.appPath.startsWith("/") || !entry.appPath.endsWith(".app")) {
