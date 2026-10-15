@@ -38,6 +38,8 @@ jobs:
         run: npm run test:windows-contract
       - name: Frontend typecheck and Vitest
         run: npm run typecheck && npm test
+      - name: Generate Windows .ico and PNG assets
+        run: npm run prepare:windows
       - name: Native Windows/Rust tests
         run: npm run test:rust
       - name: Build native Windows executable and NSIS setup
