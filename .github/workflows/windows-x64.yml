@@ -1,17 +1,11 @@
 name: Windows x64
 on:
-  push:
-    branches: [feat/windows-x64-launcher]
   pull_request:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'src-tauri/**'
-      - 'scripts/**'
-      - 'package.json'
-      - '.github/workflows/windows-x64.yml'
-      - 'docs/specs/007-windows-x64.md'
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   windows-x64:
