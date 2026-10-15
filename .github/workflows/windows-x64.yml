@@ -1,0 +1,53 @@
+name: Windows x64
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x64:
+    name: Windows x64 · native tests & NSIS executable
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Install JavaScript dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check Windows toolchain
+        run: npm run doctor:windows
+      - name: Windows SDD contract tests
+        run: npm run test:windows-contract
+      - name: Frontend typecheck and Vitest
+        run: npm run typecheck && npm test
+      - name: Generate Windows .ico and PNG assets
+        run: npm run prepare:windows
+      - name: Native Windows/Rust tests
+        run: npm run test:rust
+      - name: Build native Windows executable and NSIS setup
+        run: npm run build:windows
+      - name: Verify generated exe and installer
+        shell: pwsh
+        run: |
+          $app = 'src-tauri/target/release/launchanything.exe'
+          if (!(Test-Path $app)) { throw "Missing native Windows executable: $app" }
+          $setup = @(Get-ChildItem 'src-tauri/target/release/bundle/nsis' -File -Filter '*-setup.exe')
+          if ($setup.Count -lt 1) { throw 'Missing NSIS setup.exe installer' }
+          $setup | ForEach-Object { Write-Host "Unsigned installer: $($_.FullName)" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LaunchAnything-windows-x64-unsigned
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          retention-days: 7

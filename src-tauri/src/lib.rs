@@ -3,6 +3,8 @@ mod launch;
 mod model;
 mod proxy;
 mod store;
+#[cfg(target_os = "windows")]
+mod windows_launch;
 
 use tauri::Manager;
 

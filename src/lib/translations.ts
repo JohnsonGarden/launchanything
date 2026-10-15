@@ -124,6 +124,8 @@ export const en = {
   "validation.bypass": "Bypass hosts cannot contain whitespace, commas or semicolons.",
   "validation.appName": "Enter an application name (up to 70 characters).",
   "validation.appPath": "Choose a macOS .app bundle.",
+  "validation.appPathWindows": "Choose an absolute path to a Windows .exe application.",
+  "appForm.bundleWindows": "WINDOWS EXECUTABLE",
   "validation.appProfile": "Choose a proxy profile.",
   "common.close": "Close dialog",
 } as const;
@@ -143,7 +145,7 @@ export const zhCN: Record<MessageKey, string> = {
   "about.eyebrow": "透明与安全", "about.title": "简单而透明", "about.tagline": "功能边界清晰，默认行为可预期。", "about.serviceTitle": "不运行后台代理服务", "about.serviceDetail": "LaunchAnything 不会替换或修改已有的代理客户端，只使用选定配置启动应用。", "about.localTitle": "配置保留在本机", "about.localDetail": "代理和应用路径保存在 macOS 应用配置目录中，不收集分析数据，也不远程同步。", "about.bestTitle": "尽力配置应用代理", "about.bestDetail": "macOS 不会强制应用遵循环境变量或 Chromium 参数。部分应用使用独立网络栈，仍可能直连。", "about.guardTitle": "启动前连接检查", "about.guardDetail": "代理 TCP 端口无法连接时阻止启动。但端口可连接不代表应用流量已通过代理。", "about.compatTitle": "兼容性说明", "about.compatDetail": "遵循 HTTP_PROXY、HTTPS_PROXY、ALL_PROXY 的应用可选「环境变量」；Chromium / Electron 应用可选「Chromium 参数」；必要时可选「组合模式」。若需强制接管单应用网络流量，需要独立的 macOS Network Extension / 透明代理架构，不属于当前版本。", "about.github": "前往 GitHub",
   "appForm.create": "添加应用", "appForm.edit": "编辑应用", "appForm.description": "为应用指定代理和启动方式。", "appForm.bundle": "应用程序文件", "appForm.browse": "选择应用", "appForm.displayName": "显示名称", "appForm.namePlaceholder": "例如 Google Chrome", "appForm.profile": "代理配置", "appForm.method": "启动方式", "appForm.quitting": "请先完全退出目标应用。若应用已在运行，它可能继续沿用原有网络设置，因此 LaunchAnything 会阻止重复启动。", "appForm.save": "保存应用", "appForm.saved": "应用已保存", "mode.environment": "环境变量", "mode.chromium": "Chromium 参数", "mode.combined": "组合模式", "mode.environmentDetail": "适用于支持 HTTP(S)_PROXY 或 ALL_PROXY 的应用。", "mode.chromiumDetail": "适用于支持 --proxy-server 的 Chromium / Electron 应用。", "mode.combinedDetail": "同时传入两种设置；适合混合网络栈，但不保证代理生效。",
   "proxyForm.create": "新建代理", "proxyForm.edit": "编辑代理", "proxyForm.description": "连接 Shadowrocket、Clash 等客户端提供的本地端口。", "proxyForm.name": "代理名称", "proxyForm.namePlaceholder": "例如 Shadowrocket · 美国", "proxyForm.protocol": "协议", "proxyForm.host": "主机地址", "proxyForm.port": "端口", "proxyForm.bypass": "绕过代理的主机", "proxyForm.bypassHint": "使用英文逗号分隔；仅对支持这些设置的应用生效。", "proxyForm.testDisclaimer": "端口检测仅验证 TCP 连接，无法保证目标应用的网络流量经过代理。", "proxyForm.test": "测试端口", "proxyForm.save": "保存代理", "proxyForm.saved": "代理已保存", "proxyForm.portOk": "端口可连接 · {latency} 毫秒", "proxyForm.portFail": "代理端口不可连接",
-  "validation.profileName": "请输入代理名称（不超过 70 个字符）。", "validation.profileHost": "请输入不含协议或端口的主机名或 IP。", "validation.profilePort": "端口必须在 1 到 65535 之间。", "validation.bypass": "绕过代理的主机不能包含空格、逗号或分号。", "validation.appName": "请输入应用名称（不超过 70 个字符）。", "validation.appPath": "请选择 macOS .app 应用文件。", "validation.appProfile": "请选择代理配置。", "common.close": "关闭弹窗",
+  "validation.profileName": "请输入代理名称（不超过 70 个字符）。", "validation.profileHost": "请输入不含协议或端口的主机名或 IP。", "validation.profilePort": "端口必须在 1 到 65535 之间。", "validation.bypass": "绕过代理的主机不能包含空格、逗号或分号。", "validation.appName": "请输入应用名称（不超过 70 个字符）。", "validation.appPath": "请选择 macOS .app 应用文件。", "validation.appPathWindows": "请选择 Windows 应用的绝对 .exe 路径。", "appForm.bundleWindows": "Windows 可执行文件", "validation.appProfile": "请选择代理配置。", "common.close": "关闭弹窗",
 };
 
 export function resolveLocale(language: string | undefined | null): Locale {
