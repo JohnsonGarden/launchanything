@@ -1,0 +1,61 @@
+name: macOS Intel x86_64
+on:
+  push:
+    branches: [feat/macos-intel-x64]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src-tauri/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - '.github/workflows/macos-intel.yml'
+      - 'docs/specs/006-macos-intel.md'
+  workflow_dispatch:
+
+jobs:
+  intel-build:
+    name: Intel Mac · x86_64 native tests & unsigned bundle
+    runs-on: macos-15-intel
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Verify runner architecture
+        run: test "$(uname -m)" = x86_64
+      - name: Install npm dependencies
+        run: npm install --no-audit --no-fund
+      - name: Intel build contract tests
+        run: npm run test:intel-contract
+      - name: Developer preflight
+        run: npm run doctor
+      - name: TypeScript and UI tests
+        run: npm run typecheck && npm test
+      - name: Swift helper and LaunchServices regressions
+        run: npm run prepare:macos && npm run test:macos-launch
+      - name: Rust unit tests
+        run: npm run test:rust
+      - name: Build Intel macOS app
+        run: npm run build:macos-intel
+      - name: Verify Intel bundle architecture
+        run: npm run verify:macos-intel
+      - name: Archive unsigned Intel app
+        run: |
+          mkdir -p artifacts
+          ditto -c -k --sequesterRsrc --keepParent \
+            src-tauri/target/x86_64-apple-darwin/release/bundle/macos/LaunchAnything.app \
+            artifacts/LaunchAnything-macos-intel-unsigned.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LaunchAnything-macos-intel-unsigned
+          path: artifacts/LaunchAnything-macos-intel-unsigned.zip
+          retention-days: 7

@@ -17,7 +17,11 @@
     "predev": "npm run doctor",
     "prebuild": "npm run doctor",
     "test:doctor": "node --test scripts/doctor.test.mjs",
-    "test:macos-launch": "node --test scripts/macos-launch.test.mjs"
+    "test:macos-launch": "node --test scripts/macos-launch.test.mjs",
+    "prebuild:macos-intel": "npm run doctor",
+    "build:macos-intel": "LAUNCHANYTHING_MACOS_ARCH=x86_64 tauri build --target x86_64-apple-darwin",
+    "test:intel-contract": "node --test scripts/intel-build.test.mjs",
+    "verify:macos-intel": "bash scripts/verify-macos-architecture.sh x86_64"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",
