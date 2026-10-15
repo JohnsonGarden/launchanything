@@ -38,3 +38,11 @@ jobs:
         run: npm run test:rust
       - name: Build frontend
         run: npm run web:build
+      - name: Build unsigned macOS app bundle
+        run: npm run build
+      - name: Verify bundled app and native helper
+        run: |
+          test -d src-tauri/target/release/bundle/macos/LaunchAnything.app
+          test -f src-tauri/target/release/bundle/macos/LaunchAnything.app/Contents/Resources/bin/launchanything-macos-helper
+          echo "Unsigned macOS app and native launcher are bundled correctly."
+

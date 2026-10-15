@@ -11,10 +11,10 @@ name = "launchanything_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "=2.8.0", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-dialog = "2"
+tauri = { version = "=2.8.0", features = [] }
+tauri-plugin-dialog = "=2.4.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
