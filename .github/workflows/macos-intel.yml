@@ -1,17 +1,11 @@
 name: macOS Intel x86_64
 on:
-  push:
-    branches: [feat/macos-intel-x64]
   pull_request:
     branches: [main]
-    paths:
-      - 'src-tauri/**'
-      - 'src/**'
-      - 'scripts/**'
-      - 'package.json'
-      - '.github/workflows/macos-intel.yml'
-      - 'docs/specs/006-macos-intel.md'
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   intel-build:
