@@ -17,7 +17,16 @@
     "predev": "npm run doctor",
     "prebuild": "npm run doctor",
     "test:doctor": "node --test scripts/doctor.test.mjs",
-    "test:macos-launch": "node --test scripts/macos-launch.test.mjs"
+    "test:macos-launch": "node --test scripts/macos-launch.test.mjs",
+    "dev:windows": "tauri dev",
+    "build:windows": "tauri build",
+    "predev:windows": "npm run doctor:windows",
+    "prebuild:windows": "npm run doctor:windows",
+    "doctor:windows": "node scripts/doctor-windows.mjs",
+    "test:windows-contract": "node --test scripts/windows-contract.test.mjs",
+    "prepare:windows": "node scripts/prepare-windows.mjs",
+    "web:dev:windows": "npm run prepare:windows && vite --host 127.0.0.1",
+    "web:build:windows": "npm run prepare:windows && tsc --noEmit && vite build"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",

@@ -1,6 +1,12 @@
-use std::{io::Write, path::{Path, PathBuf}, process::{Command, Stdio}};
-use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use std::path::Path;
+#[cfg(target_os = "macos")]
+use std::{io::Write, path::PathBuf, process::{Command, Stdio}};
+use serde::Serialize;
+#[cfg(target_os = "macos")]
+use serde::Deserialize;
+use tauri::AppHandle;
+#[cfg(target_os = "macos")]
+use tauri::Manager;
 
 use crate::{model::{AppEntry, ProxyProfile, validate_app}, proxy::build_launch_plan};
 
@@ -11,12 +17,14 @@ pub struct LaunchResult {
     pub message: String,
 }
 
+#[cfg(target_os = "macos")]
 #[derive(Deserialize)]
 struct HelperReply {
     pid: Option<i32>,
     error: Option<String>,
 }
 
+#[cfg(target_os = "macos")]
 #[derive(Serialize)]
 struct HelperRequest<'a> {
     path: &'a str,
@@ -39,14 +47,24 @@ pub fn launch(app: &AppHandle, entry: &AppEntry, profile: &ProxyProfile) -> Resu
     validate_app(entry)?;
     let path = std::fs::canonicalize(&entry.app_path)
         .map_err(|_| "The selected application no longer exists.".to_string())?;
+    #[cfg(target_os = "macos")]
     if path.extension().and_then(|s| s.to_str()) != Some("app") || !path.is_dir() {
         return Err("The selected file is not a macOS application bundle.".into());
     }
+    #[cfg(target_os = "windows")]
+    if !path.is_file() || !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
+        return Err("The selected file is not a Windows .exe application.".into());
+    }
     let plan = build_launch_plan(profile, &entry.mode)?;
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(target_os = "windows")]
+    {
+        let _ = app;
+        return crate::windows_launch::launch_windows(&path, plan);
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     {
         let _ = (app, path, plan);
-        return Err("App launching is supported only on macOS.".into());
+        return Err("App launching is not supported on this platform.".into());
     }
     #[cfg(target_os = "macos")]
     {

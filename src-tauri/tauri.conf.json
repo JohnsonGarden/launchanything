@@ -10,21 +10,26 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{
-      "title": "LaunchAnything",
-      "width": 1140,
-      "height": 760,
-      "minWidth": 850,
-      "minHeight": 600,
-      "backgroundColor": "#F7F8FA"
-    }],
-    "security": { "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost" }
+    "windows": [
+      {
+        "title": "LaunchAnything",
+        "width": 1140,
+        "height": 760,
+        "minWidth": 850,
+        "minHeight": 600,
+        "backgroundColor": "#FFF7FA"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost"
+    }
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns"],
-    "resources": { "bin/launchanything-macos-helper": "bin/launchanything-macos-helper" },
-    "macOS": { "minimumSystemVersion": "12.0" }
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png"
+    ]
   }
 }

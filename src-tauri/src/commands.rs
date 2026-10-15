@@ -41,8 +41,13 @@ pub fn delete_profile(id: String, store: State<'_, AppStore>) -> Result<AppState
 #[tauri::command]
 pub fn save_app(entry: AppEntry, store: State<'_, AppStore>) -> Result<AppState, String> {
     validate_app(&entry)?;
+    #[cfg(target_os = "macos")]
     if !std::path::Path::new(&entry.app_path).is_dir() {
         return Err("The selected .app bundle could not be found.".into());
+    }
+    #[cfg(target_os = "windows")]
+    if !std::path::Path::new(&entry.app_path).is_file() {
+        return Err("The selected .exe application could not be found.".into());
     }
     store.update(|state| {
         if !state.profiles.iter().any(|profile| profile.id == entry.profile_id) {
