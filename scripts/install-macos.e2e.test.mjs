@@ -17,6 +17,8 @@ function fixture() {
   for(const folder of [home,tmp,bin,join(project,"src-tauri")]) mkdirSync(folder,{recursive:true});
   writeFileSync(join(project,"package.json"), JSON.stringify({scripts:{build:"stub"}}));
   writeFileSync(join(project,"src-tauri","tauri.conf.json"), '{"version":"0.1.0"}');
+  const commitResponse=join(root,"commit-response.json");
+  writeFileSync(commitResponse,'{\n  "sha": "'+sha+'"\n}\n');
   const archive=join(root,"source.tar.gz");
   const packed=spawnSync("tar",["-czf",archive,"-C",join(root,"fixture"),"source"],{encoding:"utf8"});
   assert.equal(packed.status,0,packed.stderr);
@@ -49,12 +51,12 @@ function fixture() {
     '  prev="$value"',
     'done',
     'case "$url" in',
-    '  https://api.github.com/*) printf \u0027{"sha":"%s"}\\n\u0027 "$TEST_SHA" > "$output";;',
+    '  https://api.github.com/*) cp "$TEST_COMMIT_RESPONSE" "$output";;',
     '  https://codeload.github.com/*) cp "$TEST_ARCHIVE" "$output";;',
     '  *) echo "UNEXPECTED_EXTERNAL_URL: $url" >&2; exit 98;;',
     'esac',
   ].join("\n"));
-  return {root,home,env:{...process.env,HOME:home,TMPDIR:tmp,PATH:bin+":"+process.env.PATH,TEST_ARCHIVE:archive,TEST_SHA:sha}};
+  return {root,home,env:{...process.env,HOME:home,TMPDIR:tmp,PATH:bin+":"+process.env.PATH,TEST_ARCHIVE:archive,TEST_SHA:sha,TEST_COMMIT_RESPONSE:commitResponse}};
 }
 describe("complete Agent bootstrap path without actual network/privilege changes",()=>{
   it("installs and verifies APP, records immutable SHA, preserves settings and backs up on retry",()=>{
