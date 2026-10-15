@@ -17,14 +17,18 @@
     "predev": "npm run doctor",
     "prebuild": "npm run doctor",
     "test:doctor": "node --test scripts/doctor.test.mjs",
-    "test:macos-launch": "node --test scripts/macos-launch.test.mjs"
+    "test:macos-launch": "node --test scripts/macos-launch.test.mjs",
+    "prebuild:macos-intel": "npm run doctor",
+    "build:macos-intel": "LAUNCHANYTHING_MACOS_ARCH=x86_64 tauri build --target x86_64-apple-darwin",
+    "test:intel-contract": "node --test scripts/intel-build.test.mjs",
+    "verify:macos-intel": "bash scripts/verify-macos-architecture.sh x86_64"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-select": "2.2.6",
     "@radix-ui/react-slot": "1.2.3",
-    "@tauri-apps/api": "2.8.0",
-    "@tauri-apps/plugin-dialog": "2.4.0",
+    "@tauri-apps/api": "2.12.3",
+    "@tauri-apps/plugin-dialog": "2.8.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "0.468.0",
@@ -35,7 +39,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
-    "@tauri-apps/cli": "2.8.4",
+    "@tauri-apps/cli": "2.12.2",
     "@types/node": "22.18.0",
     "@types/react": "19.1.10",
     "@types/react-dom": "19.1.7",
