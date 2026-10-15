@@ -51,10 +51,18 @@ jobs:
           TAURI_VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
           test "$RELEASE_TAG" = "v$PACKAGE_VERSION"
           test "$PACKAGE_VERSION" = "$TAURI_VERSION"
-          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "Refusing to overwrite existing tag: $RELEASE_TAG" >&2
-            exit 1
-          fi
+          # A private repo checkout may deliberately have no persisted Git credentials.
+          # Check tag existence via authenticated GitHub API; fail closed on API errors.
+          TAG_HTTP_STATUS="$(curl --fail-with-body --silent --show-error --output /dev/null \
+            --write-out '%{http_code}' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" || true)"
+          case "$TAG_HTTP_STATUS" in
+            404) ;;
+            200) echo "Refusing to overwrite existing tag: $RELEASE_TAG" >&2; exit 1 ;;
+            *) echo "Cannot safely determine tag availability (HTTP $TAG_HTTP_STATUS)." >&2; exit 1 ;;
+          esac
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Refusing to overwrite existing release: $RELEASE_TAG" >&2
             exit 1
