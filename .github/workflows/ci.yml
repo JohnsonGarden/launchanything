@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  macos-validation:
+    name: macOS · tests & build
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Install JavaScript dependencies
+        run: npm install --no-audit --no-fund
+      - name: Developer preflight unit tests
+        run: npm run test:doctor
+      - name: Developer environment preflight
+        run: npm run doctor
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Frontend tests
+        run: npm test
+      - name: Compile native macOS helper and icons
+        run: npm run prepare:macos
+      - name: Verify native launch environment and arguments
+        run: npm run test:macos-launch
+      - name: Rust tests
+        run: npm run test:rust
+      - name: Build frontend
+        run: npm run web:build
