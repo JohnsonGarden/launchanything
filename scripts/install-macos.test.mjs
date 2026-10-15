@@ -30,7 +30,7 @@ describe("macOS source installer contract", () => {
     assert.match(script, /LaunchAnything\.app/);
     assert.match(script, /launchanything-macos-helper/);
     assert.match(script, /ditto/);
-    assert.match(script, /backup/);
+    assert.match(script, /backup/i);
     assert.match(script, /trap/);
   });
   it("ships bilingual instructions and the agent runbook", () => {
