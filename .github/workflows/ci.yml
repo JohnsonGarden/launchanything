@@ -30,6 +30,8 @@ jobs:
         run: npm run test:doctor
       - name: Developer environment preflight
         run: npm run doctor
+      - name: Release safety and documentation contract tests
+        run: npm run test:release-contract
       - name: Typecheck
         run: npm run typecheck
       - name: Frontend tests

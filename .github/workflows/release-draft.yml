@@ -1,0 +1,120 @@
+name: Prepare macOS release draft
+
+# Explicit maintainer action only. Do NOT publish unsigned binaries automatically.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag to prepare (must match package.json and Tauri config, e.g. v0.1.0)"
+        required: true
+        type: string
+        default: v0.1.0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-draft-${{ github.event.inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-macos-arm64:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Verify trusted main, version and release uniqueness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$(uname -m)" = "arm64"
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          PACKAGE_VERSION="$(npm pkg get version | tr -d '"')"
+          TAURI_VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          test "$RELEASE_TAG" = "v$PACKAGE_VERSION"
+          test "$PACKAGE_VERSION" = "$TAURI_VERSION"
+          # A private repo checkout may deliberately have no persisted Git credentials.
+          # Check tag existence via authenticated GitHub API; fail closed on API errors.
+          TAG_HTTP_STATUS="$(curl --fail-with-body --silent --show-error --output /dev/null \
+            --write-out '%{http_code}' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" || true)"
+          case "$TAG_HTTP_STATUS" in
+            404) ;;
+            200) echo "Refusing to overwrite existing tag: $RELEASE_TAG" >&2; exit 1 ;;
+            *) echo "Cannot safely determine tag availability (HTTP $TAG_HTTP_STATUS)." >&2; exit 1 ;;
+          esac
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Refusing to overwrite existing release: $RELEASE_TAG" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies and run release contract
+        run: |
+          npm install --no-audit --no-fund
+          npm run test:release-contract
+          npm run typecheck
+          npm test
+
+      - name: Build unsigned macOS Apple Silicon bundles
+        run: |
+          npm run doctor
+          npm run build
+
+      - name: Validate bundled application and create user-download assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="src-tauri/target/release/bundle/macos/LaunchAnything.app"
+          HELPER="$APP/Contents/Resources/bin/launchanything-macos-helper"
+          test -d "$APP"
+          test -f "$HELPER"
+          APP_BIN="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -print -quit)"
+          test -n "$APP_BIN"
+          xcrun lipo "$APP_BIN" -verify_arch arm64
+          xcrun lipo "$HELPER" -verify_arch arm64
+          DMG="$(find src-tauri/target/release/bundle/dmg -maxdepth 1 -name '*.dmg' -type f -print -quit)"
+          test -n "$DMG"
+          mkdir -p release-assets
+          cp "$DMG" "release-assets/LaunchAnything_${RELEASE_TAG}_macos_arm64_UNSIGNED.dmg"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "release-assets/LaunchAnything_${RELEASE_TAG}_macos_arm64_UNSIGNED_app.zip"
+          (cd release-assets && shasum -a 256 *.dmg *.zip > SHA256SUMS.txt)
+          ls -lh release-assets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64-unsigned-release-candidate
+          path: release-assets/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Create GitHub draft prerelease — do not publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          # A draft must be reviewed and signed/notarized before public distribution.
+          gh release create "$RELEASE_TAG" release-assets/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --draft --prerelease \
+            --title "LaunchAnything $RELEASE_TAG - macOS arm64 UNSIGNED PREVIEW" \
+            --notes-file docs/releases/v0.1.0.md

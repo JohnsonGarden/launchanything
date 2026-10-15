@@ -1,41 +1,72 @@
 # LaunchAnything
 
-**一个入口，让 macOS 应用按你的代理配置启动。**
+**一个启动台，按你指定的代理启动桌面应用。**
 
-[简体中文](README.md) · [English](README.en.md) · [问题反馈](https://github.com/JohnsonGarden/launchanything/issues) · [License](LICENSE)
+[**简体中文**](README.md) · [**English**](README.en.md) · [下载与版本](https://github.com/JohnsonGarden/launchanything/releases) · [反馈问题](https://github.com/JohnsonGarden/launchanything/issues) · [MIT License](LICENSE)
 
-LaunchAnything 是轻量、隐私优先的桌面代理启动器。为每个应用保存 HTTP / SOCKS5 代理端点及启动模式，通过 macOS 原生 LaunchServices 打开应用，而**不修改系统全局代理**。界面采用 React + TypeScript、Tailwind / shadcn 风格组件及柔和玫瑰粉主题，支持中文和英文即时切换。
+[![macOS CI](https://github.com/JohnsonGarden/launchanything/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JohnsonGarden/launchanything/actions/workflows/ci.yml)
 
-> **当前稳定基线：v0.1.0（macOS Apple Silicon）**。已在 Apple Silicon Mac 上完成实际启动、代理配置及 TCP 端口测试，并通过 macOS CI。软件不是 VPN，不保证每个应用的所有流量都经过代理。Intel Mac 与 Windows 客户端将在独立开发分支完成构建和验证后提供；目前**没有签名、公证或正式安装包发布承诺**。
+LaunchAnything 是一款**轻量、隐私优先的跨平台桌面代理启动器**：为不同 APP 设置自己的 HTTP / SOCKS5 本地代理，按需启动应用，**不修改系统全局代理**。界面采用 React、TypeScript、Tailwind 与 shadcn/ui 设计规范，使用简洁的玫瑰粉色系，支持中文 / English 即时切换。
 
-## 能做什么
+> **2026-10-15 发布状态：** `main` 是已在 Apple Silicon Mac 真机试用、并通过完整打包 CI 的 **v0.1.0 稳定代码基线**。macOS Intel 和 Windows x64 的独立分支也已经通过原生 CI、生成未签名安装工件，**但尚未完成真机验收**。目前 [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases) **尚无公开安装包**；正在准备 Apple Silicon 的 Release 草稿。未完成签名、公证或安装验收前，不将测试构建标为正式发行版。
 
-- **应用启动台**：集中管理 `.app`，一键按照已保存的代理配置启动。
-- **代理配置**：支持 HTTP 与 SOCKS5、本地或自定义地址、端口、绕过主机列表。
-- **三种启动模式**：环境变量 / Chromium 参数 / 组合模式。
-- **真实的系统启动结果**：由 Rust 校验参数、Swift 调用 `NSWorkspace.OpenConfiguration`，报告 macOS 确认的进程 PID。
-- **安全默认行为**：代理 TCP 端口不可达时阻止启动；目标应用已运行时避免悄悄复用原进程；隔离父进程遗留代理变量。
-- **本地优先**：配置以版本化 JSON 保存在本机；无需账号，不收集遥测。
-- **交互效率**：搜索 `⌘ K`，新增应用 `⌘ N`；中文 / EN 切换记住个人选择。
+## 下载与安装
 
-## 当前平台支持
+**普通用户：** 正式安装包准备好后，请从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases) 下载与你的系统及处理器架构对应的安装文件；不需要 Node.js、Rust、Git 或命令行。
 
-| 平台 | 状态 | 说明 |
+| 系统 / 架构 | 当前状态 | 下载 / 验证 |
 |---|---|---|
-| macOS Apple Silicon | **可用 / 已有真机反馈** | 主线稳定基线；未签名分发 |
-| macOS Intel（x86_64） | **开发中** | 单独分支做交叉编译、原生 helper 及打包验证 |
-| Windows x64 | **开发中** | 单独分支实现 Windows 原生进程启动、.exe 构建、CI 与功能测试 |
-| Linux | 未规划 | 当前不支持 |
+| **macOS Apple Silicon（M 系列，arm64）** | **稳定代码，发行包筹备中** | [主线完整 CI 已通过](https://github.com/JohnsonGarden/launchanything/actions/runs/38746949400)，包括原生 Swift helper 和 `.app` 打包；等待签名、公证及发布流程 |
+| **macOS Intel（x86_64）** | **开发预览版，未真机验收** | [Intel CI 已通过](https://github.com/JohnsonGarden/launchanything/actions/runs/38745634965)，生成未签名 `.app`；[开发 PR #3](https://github.com/JohnsonGarden/launchanything/pull/3) |
+| **Windows 10/11 x64** | **开发预览版，未真机验收** | [Windows CI 已通过](https://github.com/JohnsonGarden/launchanything/actions/runs/38745714406)，生成未签名 NSIS `setup.exe`；[开发 PR #4](https://github.com/JohnsonGarden/launchanything/pull/4) |
+| Linux | 不支持 | 尚无 Linux 客户端 |
 
-## 本地运行（macOS）
+### 体验 Windows / Intel 测试构建
 
-前提：macOS 12+、Node.js **22+**、Rust stable（`cargo` / `rustc`）、Xcode Command Line Tools，以及**已经运行、提供 HTTP 或 SOCKS5 本地监听端口**的代理客户端（如 Shadowrocket / Clash / Xray）。
+已经生成的**开发工件**在上述 Intel / Windows CI 页面底部的 **Artifacts** 中：
+
+- Intel：`LaunchAnything-macos-intel-unsigned`
+- Windows：`LaunchAnything-windows-x64-unsigned`
+
+需要登录 GitHub 才能从 Actions 下载；当前工件保留期为 **7 天**，过期后需重新运行对应分支的构建。**这些并不是正式发行版**：Intel 的应用尚未经过 Apple 公证；Windows 的未签名安装包可能触发 SmartScreen 提示。请仅在理解风险并信任构建来源时测试，不建议普通用户绕过系统安全检查。
+
+## 功能
+
+- **应用启动台**：集中管理应用与其代理配置。稳定 macOS 版本支持 `.app`；Windows 开发分支支持 `.exe`。
+- **独立代理配置**：HTTP / SOCKS5、地址、端口、绕过主机（`NO_PROXY` 等）。
+- **三种代理启动模式**：环境变量、Chromium / Electron 启动参数、组合模式。
+- **原生启动**：Rust 后端校验参数，macOS 使用 Swift/AppKit LaunchServices；Windows 开发版使用系统原生进程创建。
+- **安全边界**：端口 TCP 不可达时拒绝启动，隔离父进程遗留的代理环境，避免已运行 APP 悄悄复用旧进程。
+- **本地优先**：配置以版本化 JSON 保存在本机；不要求登录账号，不收集遥测。
+- **双语与效率**：简体中文 / 英文即时切换，记住语言偏好；macOS 支持 `⌘ K` 搜索与 `⌘ N` 新增应用。
+
+## 日常使用
+
+1. 先运行 Shadowrocket、Clash、v2rayN、Xray 等代理客户端，确认它在本机监听 HTTP 或 SOCKS5 端口。
+2. 在 LaunchAnything 的「代理配置」中新增代理，填写**真实的协议、主机、端口**，测试 TCP 连接。
+3. 添加目标应用，为其绑定代理并选择启动模式。**请先完全退出目标 APP 及其后台进程**，再从启动台打开。
+4. 使用目标应用自身的连接日志、实际请求或出口 IP 验证代理效果。
+
+| 启动模式 | 方式 | 更适合 |
+|---|---|---|
+| 环境变量 | `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY` 等 | 遵循代理环境变量的程序和子进程 |
+| Chromium 参数 | `--proxy-server`、`--proxy-bypass-list` | 接受启动参数的 Chromium / Electron 程序 |
+| 组合模式 | 同时提供两种配置 | 多网络栈程序的兼容性测试，**不是强制全流量代理** |
+
+**SOCKS5 提示：** 部分客户端支持 `socks5h://`（代理侧 DNS），而 Chromium 接受 `socks5://`。个别 Electron 组件对 `socks5h://` 不兼容；可以为此类 APP 配置经过验证的本地 HTTP / mixed 代理监听。详见 [Antigravity 代理兼容性记录](docs/antigravity-proxy.md)。
+
+**重要限制：** 端口 TCP 连通、进程成功启动，都**不能证明应用全部网络流量经过代理**。LaunchAnything 不是 VPN、网络过滤器或强制透明代理，也不会安装网络扩展或修改全局代理。
+
+## 开发者：从源码运行
+
+以下内容仅面向贡献者或需要自定义开发的用户；普通用户不需要安装开发工具。
+
+### macOS Apple Silicon（当前 `main`）
+
+要求 macOS 12+、Node.js 22+、Rust stable、Xcode Command Line Tools。仅在尚未安装时执行：
 
 ```bash
-# 安装 Apple 开发工具（已安装可跳过）
 xcode-select --install
-
-# 如果还没有 Rust，使用官方 rustup 安装：
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 
@@ -46,55 +77,70 @@ npm run doctor
 npm run dev
 ```
 
-运行 `npm run dev` 后**使用自动弹出的 LaunchAnything 桌面窗口**。浏览器里的 `http://127.0.0.1:1420` 只是 Vite 页面，不具备原生 Tauri IPC，无法读取真实配置。首次 Rust 构建需要编译依赖，可能稍慢。
+`npm run dev` 会弹出独立 **LaunchAnything 桌面窗口**。浏览器打开的 `http://127.0.0.1:1420` 只是 Vite 预览，**无法访问 Tauri 原生配置和启动 API**。
 
-构建本地 `.app` / `.dmg`（签名、公证尚未配置）：
+本地构建未签名 `.app` / `.dmg`：
 
 ```bash
 npm run build
 ```
 
-日常操作：先保证代理客户端正在监听；在「代理配置」中填写实际协议、IP/域名和端口并测试 TCP 连接；添加需要启动的 `.app`，分配代理和启动模式；**先完全退出目标应用**再从启动台运行。不要把“TCP 可达”或“应用启动成功”等同于“应用全部网络已代理”。
+### macOS Intel（开发分支）
 
-### 启动模式如何选？
+```bash
+git clone https://github.com/JohnsonGarden/launchanything.git
+cd launchanything
+git switch --track origin/feat/macos-intel-x64
+npm install
+rustup target add x86_64-apple-darwin
+npm run build:macos-intel
+npm run verify:macos-intel
+```
 
-| 模式 | 注入内容 | 适用范围 |
-|---|---|---|
-| 环境变量 | `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY` 等 | 明确支持代理环境变量的客户端 |
-| Chromium 参数 | `--proxy-server`、`--proxy-bypass-list` | 接受 Chromium / Electron 代理启动参数的应用 |
-| 组合模式 | 同时传入以上两类配置 | 混合网络栈的尝试方式，**不是强制全流量代理** |
+需要 Intel Mac 的 macOS 开发工具、Node.js 22+ 和 Rust。更多说明：[Intel 构建指南](https://github.com/JohnsonGarden/launchanything/blob/feat/macos-intel-x64/docs/platforms/macos-intel.md)。
 
-**SOCKS5 兼容提醒：** 通用环境变量采用 `socks5h://`（对支持它的客户端启用代理侧 DNS），Chromium 参数采用 `socks5://`。部分 Electron 组件不接受 `socks5h://`；此时可以使用另一个已验证的 **HTTP/mixed 本地监听**，为该应用单独创建 HTTP 代理配置。见 [Antigravity 诊断案例](docs/antigravity-proxy.md)。应用子进程、认证、地域限制和目标域名策略仍需单独排查。
+### Windows 10/11 x64（开发分支）
 
-## 开发与验收
+使用 PowerShell，提前安装 Node.js 22+、Rust MSVC、Visual Studio C++ Build Tools / Windows SDK、WebView2 Runtime：
+
+```powershell
+git clone https://github.com/JohnsonGarden/launchanything.git
+cd launchanything
+git switch --track origin/feat/windows-x64-launcher
+npm install
+npm run doctor:windows
+npm run dev:windows
+# 或打包未签名的 NSIS setup.exe：
+npm run build:windows
+```
+
+更多说明：[Windows 构建指南](https://github.com/JohnsonGarden/launchanything/blob/feat/windows-x64-launcher/docs/platforms/windows-x64.md)。
+
+### 测试与架构
 
 ```bash
 npm run doctor
 npm run test:doctor
+npm run test:release-contract
 npm run typecheck
 npm test
 npm run test:rust
 npm run prepare:macos
 npm run test:macos-launch
+npm run build
 ```
 
-架构：**Tauri 2 + Rust**（配置校验、原生命令、TCP 检测）、**Swift/AppKit**（macOS LaunchServices helper）、**React 19 + TypeScript + Tailwind / Radix**（shadcn 组件设计规范）。开发遵循 **SDD + TDD**：先写可验收规格和失败测试，再实现、重构、走 CI、真机验证。
+技术栈：**Tauri 2.12 / Rust + Swift/AppKit（macOS）或 Windows 原生进程接口 + React 19 / TypeScript / Tailwind / Radix（shadcn 风格）**。开发遵循 **SDD + TDD**：规格与验收标准 → 自动化测试 → 实现与重构 → CI → 真机验收。
 
-- [产品规格与验收](docs/specs/001-mvp.md) · [架构及安全边界](docs/architecture.md)
-- [工程决策 ADR](docs/adr/0001-tauri-swift.md) · [自动化与真机测试计划](docs/test-plan.md)
-- [配色规范](docs/design/color-tokens.md) · [双语产品规范](docs/specs/002-rose-theme-bilingual.md)
-- [开发者与 AI Agent 约定](AGENTS.md)
+相关文档：[架构与安全](docs/architecture.md) · [测试计划](docs/test-plan.md) · [工程约定](AGENTS.md) · [配色设计](docs/design/color-tokens.md) · [Release / 签名计划](docs/RELEASING.md)。
 
-### 分支约定
+## 发布与分支策略
 
-- `main`：已验收的稳定基线；不直接提交未验证的平台功能。
-- `dev`：与稳定基线同步的集成起点（需要时使用）。
-- `feat/windows-x64-launcher`、`feat/macos-intel-x64`：各自独立于 `main` 开发，并通过 PR 验证后合并。
+- `main`：macOS Apple Silicon 已验收的稳定源码；不合并未经真机验收的 Windows / Intel 功能。
+- `dev`：与稳定主线保持同步的集成起点。
+- [Intel PR #3](https://github.com/JohnsonGarden/launchanything/pull/3) 和 [Windows PR #4](https://github.com/JohnsonGarden/launchanything/pull/4)：原生 CI 通过，仍为 Draft，待目标平台验收。
+- **Release**：从 `main` 手动生成 macOS arm64 Draft Release，先审核安装包、校验和、签名与公证状态；发布前须完成相应平台验证。当前**未创建公开 Release**。
 
-## 安全、限制与隐私
+**隐私与安全：** 不要把访问令牌、Cookie、邮箱、认证密钥或完整敏感日志上传到 Issues。macOS helper 需要非 App Sandbox 环境传入新进程启动变量。当前版本不支持凭据管理、云同步或强制代理劫持。
 
-这是**按应用传入代理启动设置的工具，不是透明代理、防火墙或 VPN**。应用可能绕过环境变量 / Chromium 参数、使用独立 socket / helper、继承已有会话，或发生 DNS/QUIC 分流。TCP 测试只验证本地端口能够连接，不验证 SOCKS/HTTP 握手、出口 IP、TLS、认证或目标进程流量。请用目标应用日志和网络诊断进行实际验证。
-
-macOS helper 需要在非 App Sandbox 下运行以传入启动环境；不会自动修改系统代理或安装网络扩展。不要把密钥、令牌、Cookie、完整敏感日志提交至仓库。目前不提供账号同步、凭据管理、强制流量接管或分发签名。
-
-**许可证：** [MIT](LICENSE)。欢迎通过 Issues 提交兼容性反馈与可复现步骤。
+[MIT License](LICENSE) · [提交问题或建议](https://github.com/JohnsonGarden/launchanything/issues)
