@@ -10,9 +10,23 @@ LaunchAnything 是一款**轻量、隐私优先的跨平台桌面代理启动器
 
 > **2026-10-15 发布状态：** `main` 是已在 Apple Silicon Mac 真机试用、并通过完整打包 CI 的 **v0.1.0 稳定代码基线**。macOS Intel 和 Windows x64 的独立分支也已经通过原生 CI、生成未签名安装工件，**但尚未完成真机验收**。目前 [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases) **尚无公开安装包**；正在准备 Apple Silicon 的 Release 草稿。未完成签名、公证或安装验收前，不将测试构建标为正式发行版。
 
+## 快捷安装（macOS M 系列）
+
+不需要手动逐项安装 Rust、Node.js 等开发工具。下面的命令会先从 GitHub 下载源码，再检查依赖、运行测试、构建并安装到 `~/Applications/LaunchAnything.app`。
+
+**执行前请先查看** [安装引导脚本](scripts/bootstrap-macos.sh) 与 [完整安装脚本](scripts/install-macos.sh)。本方案从可信源码本地构建，**不需要关闭 Gatekeeper**，但产物仍是未签名、未公证的应用；仅支持 Apple Silicon，可能需要在 macOS 上完成 Apple 开发工具的交互式安装确认。
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsSLo /tmp/launchanything-bootstrap.sh https://raw.githubusercontent.com/JohnsonGarden/launchanything/main/scripts/bootstrap-macos.sh && bash /tmp/launchanything-bootstrap.sh
+```
+
+**交给 AI Agent 安装：** 将 [AI Agent 安装手册](docs/INSTALL_AGENT.md) 发给你的 Codex、Claude Code 或其他本机 Agent，要求它按手册先检查、征求授权、执行安装、验证结果；依赖下载和现有 APP 覆盖都须获得同意。该流程不会静默执行 `sudo`，也不会修改系统代理或绕过安全策略。
+
+如果源码已经下载到本机，可以运行 `bash scripts/install-macos.sh --check` 查看环境、`--dry-run` 预演、`--yes` 在明确授权后执行，或加 `--launch` 在安装成功后打开。缺少 Homebrew 又缺少 Node 时会提示手动安装后重试。
+
 ## 下载与安装
 
-**普通用户：** 正式安装包准备好后，请从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases) 下载与你的系统及处理器架构对应的安装文件；不需要 Node.js、Rust、Git 或命令行。
+**普通用户：** 目前推荐上方的源码快捷安装。正式安装包准备好后，请从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases) 下载与你的系统及处理器架构对应的安装文件；不需要 Node.js、Rust、Git 或命令行。
 
 | 系统 / 架构 | 当前状态 | 下载 / 验证 |
 |---|---|---|

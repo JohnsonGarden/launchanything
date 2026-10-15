@@ -32,6 +32,8 @@ jobs:
         run: npm run doctor
       - name: Release safety and documentation contract tests
         run: npm run test:release-contract
+      - name: Installer safety contract tests
+        run: npm run test:install-contract
       - name: Typecheck
         run: npm run typecheck
       - name: Frontend tests

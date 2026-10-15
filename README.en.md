@@ -10,9 +10,23 @@ LaunchAnything is a **lightweight, privacy-first, cross-platform desktop proxy l
 
 > **Release status — October 15, 2026:** `main` contains the **v0.1.0 macOS Apple Silicon stable source baseline**, exercised on a real Mac and verified by full native app packaging CI. **macOS Intel and Windows x64 development branches also pass native CI and produce unsigned installer artifacts, but have not passed real-device acceptance and are not merged into `main`.** There is currently **no public download on [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases)**; an Apple Silicon draft-release workflow is being prepared. Unsigned/unnotarized test binaries are not production releases.
 
+## Quick install (macOS Apple Silicon)
+
+No need to manually orchestrate Rust, Node and native builds. The command downloads the GitHub source, checks prerequisites, runs tests, builds and installs `~/Applications/LaunchAnything.app`.
+
+**Review the [bootstrap](scripts/bootstrap-macos.sh) and [installer](scripts/install-macos.sh) first.** This compiles from trusted source without disabling Gatekeeper, but the app remains **unsigned and unnotarized**. Apple Command Line Tools may require a human confirmation dialog. This installer only supports Apple Silicon.
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsSLo /tmp/launchanything-bootstrap.sh https://raw.githubusercontent.com/JohnsonGarden/launchanything/main/scripts/bootstrap-macos.sh && bash /tmp/launchanything-bootstrap.sh
+```
+
+**AI Agent workflow:** Give [the Agent installation runbook](docs/INSTALL_AGENT.md) to Codex, Claude Code or another local computer-capable agent. It instructs the agent to check prerequisites, request authorization, install, recover and verify. Dependency changes and replacing an existing app require permission; no silent `sudo`, system-wide proxy changes or Gatekeeper bypass.
+
+For an existing source checkout use `bash scripts/install-macos.sh --check`, `--dry-run`, `--yes` after approval, and `--launch` to open the app after successful installation. Missing Node without Homebrew requires a separately approved manual installation.
+
 ## Download and install
 
-**For everyday users:** When a verified release is ready, download the installer matching your OS and CPU from [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases). You will **not** need Rust, Node.js, Git or a terminal.
+**For everyday users:** The source-based shortcut above is currently available. When a verified release is ready, download the installer matching your OS and CPU from [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases). You will **not** need Rust, Node.js, Git or a terminal.
 
 | Platform | Availability | Build and verification |
 |---|---|---|
