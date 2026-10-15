@@ -32,6 +32,10 @@ jobs:
         run: npm run doctor
       - name: Release safety and documentation contract tests
         run: npm run test:release-contract
+      - name: Agent macOS installer tests
+        run: npm run test:macos-installer
+      - name: Read-only Agent installer environment diagnostic
+        run: bash scripts/install-macos.sh --check --json
       - name: Typecheck
         run: npm run typecheck
       - name: Frontend tests

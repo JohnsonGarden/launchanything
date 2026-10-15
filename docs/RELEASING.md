@@ -8,6 +8,12 @@ LaunchAnything 面向普通用户的分发方式应是 GitHub **Releases 下载�
 
 **当前状态：** `main` 的 macOS Apple Silicon v0.1.0 代码及完整打包 CI 通过，Intel 和 Windows 的测试版也分别在自己的功能分支通过原生 CI。但截至 2026-10-15，仓库尚无公开 GitHub Release，Apple Silicon 版尚未配置 Developer ID 签名与苹果公证，Windows 未完成代码签名和真机验收。
 
+### 用户本地快捷安装（无需签名公证的替代方案）
+
+macOS Apple Silicon 用户可选择[官方源码安装脚本](../scripts/install-macos.sh)在本机编译，无需预先安装 Node/Rust/Git。该脚本只安装用户目录内的工具链和应用，不关闭 Gatekeeper、不更改系统代理；首次 Xcode CLT 仍需用户通过系统安装窗口确认。详见 [Agent 安装手册](AGENT_INSTALL.md)。
+
+**重要区别：** 这种做法可以避免分发未签名二进制文件，但需要联网、数 GB 空间与数十分钟编译，并非签名和公证的等价替代。公开发布 DMG 时仍应依照下面的检查项完成签名、公证和真机安装验收。
+
 ### 先生成 Apple Silicon Draft Release
 
 1. 先将 README、发布规格和 `.github/workflows/release-draft.yml` 合并到 `main`，等待仓库的常规 CI 通过。
@@ -34,6 +40,12 @@ LaunchAnything 面向普通用户的分发方式应是 GitHub **Releases 下载�
 GitHub **Releases** should be the primary distribution channel for non-technical users. They should not need to install Git, Rust, Node or build from source.
 
 As of October 15, 2026, the stable source is macOS Apple Silicon v0.1.0 with passing full app-bundle CI. Intel and Windows preview builds also pass native CI in their respective draft PRs, but real-device acceptance is pending. **No public Release, Apple Developer ID signing/notarization or Windows code signing exists yet.**
+
+### Alternative: user-local source bootstrap
+
+Apple Silicon users may build and install from source through the [official macOS installer script](../scripts/install-macos.sh) without preinstalling Git, Rust or Node. The Apple Xcode Command Line Tools dialog remains user-mediated. The bootstrap does not disable Gatekeeper or alter system proxy settings. See the [bilingual Agent installation runbook](AGENT_INSTALL.md).
+
+This is not an equivalent substitute for a signed and notarized DMG. Native compilation may take 10–30+ minutes and multiple GB of disk, and distributing a prebuilt installer still requires signing and notarization.
 
 ### Prepare the Apple Silicon draft
 

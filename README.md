@@ -12,7 +12,23 @@ LaunchAnything 是一款**轻量、隐私优先的跨平台桌面代理启动器
 
 ## 下载与安装
 
-**普通用户：** 正式安装包准备好后，请从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases) 下载与你的系统及处理器架构对应的安装文件；不需要 Node.js、Rust、Git 或命令行。
+### Mac 快捷安装：复制一条命令
+
+**macOS Apple Silicon（M 系列）现在可以不预装 Git、Homebrew、Node.js 或 Rust，直接通过官方脚本从源码安装。**
+
+```bash
+INSTALLER="$(mktemp "${TMPDIR:-/tmp}/launchanything-installer.XXXXXXXX")" && curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/JohnsonGarden/launchanything/main/scripts/install-macos.sh -o "$INSTALLER" && bash "$INSTALLER" --install --yes
+```
+
+安装器会检查 macOS 和芯片架构，在用户授权下安装缺少的 Node.js 22（校验官方 SHA-256）和 Rust，从本仓库锁定某次 Git 提交的源码编译 APP，并复制到 **`~/Applications/LaunchAnything.app`**，完成后自动打开。**这是本机编译安装，并非已经签名公证的 DMG。** 初次编译可能需要 10–30 分钟以上、数 GB 空间，具体取决于机器与网络。
+
+如果缺少 **Xcode Command Line Tools**，macOS 会显示需要用户亲自确认的系统安装对话框。**完成安装后，重新运行同一条命令即可继续**；不会重复安装已有工具，也不会要求关闭 Gatekeeper、执行 sudo 或修改系统代理。
+
+运行远程脚本前，建议[先查看源码](scripts/install-macos.sh)。`--yes` 表示授权安装用户目录内的依赖。给 Codex / Claude Code 等 Agent 使用时，建议先运行 `bash "$INSTALLER" --check --json` 和 `--plan`，再执行 `--install --yes --no-launch`；遇到退出码 `20` 就等待用户完成系统对话框并重试。详见 **[Agent 完整安装操作手册](docs/AGENT_INSTALL.md)**。
+
+> Intel Mac 可选择尚未真机验收的 `--intel-preview` 进行实验性构建。Windows 客户端使用其独立的开发测试包，**不能**使用此 macOS 安装脚本。若不愿意在本地编译，仍需等待 [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases) 上未来经过签名与验证的正式安装包。
+
+**不希望本地编译的用户：** 未来正式安装包准备好后，请从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases) 下载与你的系统及处理器架构对应的安装文件；不需要 Node.js、Rust、Git 或命令行。
 
 | 系统 / 架构 | 当前状态 | 下载 / 验证 |
 |---|---|---|
