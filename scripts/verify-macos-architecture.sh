@@ -27,7 +27,7 @@ if [[ -z "$APP_BIN" ]]; then
 fi
 for BIN in "$APP_BIN" "$HELPER"; do
   echo "Verifying $BIN"
-  xcrun lipo -verify_arch x86_64 "$BIN" || {
+  xcrun lipo "$BIN" -verify_arch x86_64 || {
     echo "Found incompatible Mach-O binary in Intel app bundle." >&2
     exit 6
   }

@@ -25,7 +25,7 @@ xcrun swiftc -O -target "$SWIFT_TARGET" -framework AppKit \
   -o "$HELPER"
 chmod 755 "$HELPER"
 # Never package a helper built for another architecture.
-xcrun lipo -verify_arch "$ARCH" "$HELPER" || {
+xcrun lipo "$HELPER" -verify_arch "$ARCH" || {
   echo "Wrong-architecture Swift helper. Refusing to continue." >&2
   exit 3
 }
