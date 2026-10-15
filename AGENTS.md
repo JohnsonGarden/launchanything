@@ -1,12 +1,13 @@
-# Engineering contract (SDD + TDD)
+# Engineering contract — LaunchAnything (SDD + TDD)
 
-This is a macOS desktop product, **not** a generic Electron wrapper and not a VPN.
+LaunchAnything is a multi-platform per-application **proxy startup launcher**, not a VPN or universal network interception product. The verified baseline is macOS Apple Silicon; Windows x64 and macOS Intel are separate feature branches.
 
-1. **Specification first:** Every behavior-changing feature starts by updating `docs/specs/` with user scenario, failure mode and measurable acceptance criteria. Capture significant architectural changes under `docs/adr/`.
-2. **Red → green → refactor:** Add or update a failing deterministic test first; implement the minimal behavior; run the relevant suites; then refactor. Do not mark unexecuted tests as passing.
-3. **UI conventions:** shadcn/ui composition (Radix primitives + Tailwind + Lucide), accessible labels, macOS-friendly spacing, keyboard navigation, concise copy and zero placeholder controls.
-4. **Security:** never interpolate user input into a shell command; Rust owns validation; native launcher receives JSON via stdin. Never silently fall back to direct connections when the TCP proxy port is unreachable. Never claim a TCP connection proves per-app traffic capture.
-5. **Persistence:** prefer versioned, locally stored settings and atomic replacement; do not collect logs, API keys, analytics or credentials.
-6. **Branches:** one scoped feature branch from `dev`; conventional commits (`feat`, `fix`, `test`, `docs`, `chore`); PR targets `dev`. Include tests, screenshots when available, rollback note and explicit untested concerns. Avoid merging unreviewed releases.
-7. **Compatibility:** macOS 12+, both Apple Silicon and Intel. Mac App Sandbox must not be enabled for the current `NSWorkspace.OpenConfiguration.environment` method.
-8. **Definition of done:** TypeScript typecheck + tests, Rust tests, macOS helper compilation, runtime smoke test, and updated docs. If a check cannot be executed in the current environment, explicitly record that gap in the PR.
+1. **Specification first:** Record every behavior-changing requirement in `docs/specs/`, including platform-specific edge cases, risk, measurable acceptance and rollback. Use `docs/adr/` for consequential choices.
+2. **TDD:** Write a deterministic regression/failing test where feasible → implement the minimum safe change → refactor. Never label an unexecuted test as passing.
+3. **Design:** Radix/shadcn UI conventions, Tailwind semantic rose tokens, bilingual Chinese/English UX, accessible focus, meaningful keyboard handling. Prefer native PingFang SC for Chinese on macOS; do not package font binaries.
+4. **Native safety:** Rust owns validation. Never interpolate untrusted paths/arguments into a shell. Native launch adapters must be OS-specific; do not inject proxy config into an already-running process. No silent direct fallback on unreachable proxy port. Preserve launch-environment isolation.
+5. **Claims:** TCP reachability, proxy handshake, egress IP, per-process launch and confirmed app traffic are distinct measurements. Do not conflate them. Do not imply universal routing guarantees.
+6. **Persistence and privacy:** Keep current versioned JSON schema backward-compatible or include migration tests. Atomic on-device writes, no credentials, analytics, telemetry, uploaded logs or unrequested account data.
+7. **Branch discipline:** `main` is the stable, accepted baseline; `dev` may mirror `main` for integration. Start each new platform effort from **the same recorded main SHA** on its own `feat/*` branch. Open a PR to `main` (draft until cross-platform CI and local runtime checks); do not merge one incomplete platform into another.
+8. **Targets:** macOS uses an unsandboxed Swift/AppKit LaunchServices helper; Intel helper architecture must match the target bundle. Windows must use native process creation with safe argument/env handling and `.exe` selection. Do not claim portable code if an OS feature was not built and tested there.
+9. **Definition of done:** TypeScript + unit tests, Rust tests, OS-native helper or equivalent test, build/bundle check, runtime smoke test on the target architecture, updated English/Chinese README and an explicit PR evidence/rollback note. CI success is not a substitute for real runtime verification.
