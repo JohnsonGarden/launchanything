@@ -12,7 +12,23 @@ LaunchAnything is a **lightweight, privacy-first, cross-platform desktop proxy l
 
 ## Download and install
 
-**For everyday users:** When a verified release is ready, download the installer matching your OS and CPU from [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases). You will **not** need Rust, Node.js, Git or a terminal.
+### One-command Mac installation
+
+**macOS Apple Silicon (M-series) users can install from the official source without first installing Git, Homebrew, Node.js or Rust.**
+
+```bash
+INSTALLER="$(mktemp "${TMPDIR:-/tmp}/launchanything-installer.XXXXXXXX")" && curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/JohnsonGarden/launchanything/main/scripts/install-macos.sh -o "$INSTALLER" && bash "$INSTALLER" --install --yes
+```
+
+With user authorization, this script checks the Mac architecture and prerequisites, installs user-local Node.js 22 (official SHA-256 verified) and Rust if missing, builds an immutable GitHub commit of LaunchAnything and copies the APP into **`~/Applications/LaunchAnything.app`**, then launches it. **This is a local source build, NOT a signed or notarized DMG.** The first native build may require 10–30+ minutes and multiple GB of disk space.
+
+If **Xcode Command Line Tools** are missing, macOS displays Apple's standard installation dialog, which **the user must approve**. Wait for it to finish and **rerun the same command**. No sudo, Gatekeeper bypass or system-wide proxy changes are needed.
+
+Review the [installer source](scripts/install-macos.sh) before executing remote code. `--yes` authorizes user-local dependency installation. For Codex, Claude Code and other Agents, inspect `bash "$INSTALLER" --check --json` and `--plan` first, then run `--install --yes --no-launch` with approval. Exit `20` indicates a necessary user interaction; retry afterward. See the bilingual [Agent installation runbook](docs/AGENT_INSTALL.md).
+
+> Intel Macs require `--intel-preview` for the unverified experimental branch. Windows has its own development installer and **must not** use this macOS Bash script. Users who do not want to compile locally can wait for future signed [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases).
+
+**For users who prefer a prebuilt installer:** When a verified release is ready, download the installer matching your OS and CPU from [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases). You will **not** need Rust, Node.js, Git or a terminal.
 
 | Platform | Availability | Build and verification |
 |---|---|---|
