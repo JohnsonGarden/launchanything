@@ -8,15 +8,27 @@ export function validateProfile(profile: ProxyProfile): string | null {
   return null;
 }
 
-export function validateApp(entry: AppEntry): string | null {
+export type TargetPlatform = "macos" | "windows";
+
+export function detectPlatform(userAgent: string): TargetPlatform {
+  return /Windows NT/i.test(userAgent) ? "windows" : "macos";
+}
+
+export function validateApp(entry: AppEntry, platform: TargetPlatform = "macos"): string | null {
   if (!entry.name.trim() || entry.name.trim().length > 70) return "Enter an application name (up to 70 characters).";
-  if (!entry.appPath.startsWith("/") || !entry.appPath.endsWith(".app")) return "Choose a macOS .app bundle.";
+  if (platform === "windows") {
+    if (!/^[A-Za-z]:\\\\/.test(entry.appPath) || !/\\.exe$/i.test(entry.appPath)) {
+      return "Choose an absolute path to a Windows .exe application.";
+    }
+  } else if (!entry.appPath.startsWith("/") || !entry.appPath.endsWith(".app")) {
+    return "Choose a macOS .app bundle.";
+  }
   if (!entry.profileId) return "Choose a proxy profile.";
   return null;
 }
 
 export function appDisplayName(path: string): string {
-  return path.split("/").pop()?.replace(/\.app$/, "") ?? "Untitled app";
+  return path.split(/[\\/]/).pop()?.replace(/\.(app|exe)$/i, "") ?? "Untitled app";
 }
 
 export function displayEndpoint(profile: ProxyProfile): string {

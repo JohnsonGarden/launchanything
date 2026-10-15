@@ -112,7 +112,7 @@ pub fn validate_app(entry: &AppEntry) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         let path = std::path::Path::new(&entry.app_path);
-        if !path.is_absolute() || !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
+        if !path.is_absolute() || entry.app_path.starts_with(r"\\\\") || !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
             return Err("Select an absolute path to a Windows .exe application.".into());
         }
     }
