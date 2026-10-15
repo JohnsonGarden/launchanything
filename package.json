@@ -17,7 +17,8 @@
     "predev": "npm run doctor",
     "prebuild": "npm run doctor",
     "test:doctor": "node --test scripts/doctor.test.mjs",
-    "test:macos-launch": "node --test scripts/macos-launch.test.mjs"
+    "test:macos-launch": "node --test scripts/macos-launch.test.mjs",
+    "test:release-contract": "node --test scripts/release-contract.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",
