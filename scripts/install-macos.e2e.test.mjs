@@ -18,7 +18,7 @@ function fixture() {
   writeFileSync(join(project,"package.json"), JSON.stringify({scripts:{build:"stub"}}));
   writeFileSync(join(project,"src-tauri","tauri.conf.json"), '{"version":"0.1.0"}');
   const commitResponse=join(root,"commit-response.json");
-  writeFileSync(commitResponse,'{\n  "sha": "'+sha+'"\n}\n');
+  writeFileSync(commitResponse,JSON.stringify({sha}));
   const archive=join(root,"source.tar.gz");
   const packed=spawnSync("tar",["-czf",archive,"-C",join(root,"fixture"),"source"],{encoding:"utf8"});
   assert.equal(packed.status,0,packed.stderr);

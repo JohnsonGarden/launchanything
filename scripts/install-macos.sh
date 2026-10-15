@@ -159,7 +159,8 @@ if [[ "$ARCH" == x86_64 ]]; then
   rustup target add x86_64-apple-darwin || error 24 RUST_TARGET_FAILED "Intel Rust target missing"
 fi
 fetch "https://api.github.com/repos/$REPOSITORY/commits/$REF" "$TEMP/commit.json"
-commit="$(sed -n 's/^[[:space:]]*"sha": "\([0-9a-f]\{40\}\)".*/\1/p' "$TEMP/commit.json" | sed -n '1p')"
+commit="$(node -e 'let response; try { response=JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8")); } catch { process.exit(1); } if (!/^[a-f0-9]{40}$/.test(response.sha || "")) process.exit(1); process.stdout.write(response.sha);' "$TEMP/commit.json")" ||
+  error 23 INVALID_COMMIT_RESPONSE "Cannot parse official GitHub commit SHA"
 [[ "$commit" =~ ^[0-9a-f]{40}$ ]] ||
   error 23 INVALID_COMMIT_RESPONSE "Cannot establish immutable GitHub source SHA"
 log "Building official source SHA $commit"
