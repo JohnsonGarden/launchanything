@@ -19,7 +19,8 @@
     "test:doctor": "node --test scripts/doctor.test.mjs",
     "test:macos-launch": "node --test scripts/macos-launch.test.mjs",
     "test:release-contract": "node --test scripts/release-contract.test.mjs",
-    "test:macos-installer": "node --test scripts/install-macos.test.mjs"
+    "test:macos-installer": "node --test scripts/install-macos.test.mjs",
+    "test:macos-installer-e2e": "node --test scripts/install-macos.e2e.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",
