@@ -147,3 +147,18 @@ h1 { margin-top: 10px; font-size: 36px; line-height: 1.15; font-weight: 720; let
 }
 .language-switch .language-option:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 @media (max-width: 900px) { .topbar-actions { gap: 10px; } .topbar-actions > div:last-child { display: none; } }
+
+/* App editor: bounded viewport, independent scroll and always-visible actions. */
+.app-editor-dialog { display:flex; flex-direction:column; max-height:calc(100dvh - 32px); width:min(560px,calc(100% - 32px)); }
+.app-editor-header { display:flex; align-items:center; gap:12px; flex-shrink:0; padding:22px 25px 17px; border-bottom:1px solid var(--border-subtle); padding-right:62px; }
+.app-editor-form { display:flex; flex-direction:column; min-height:0; flex:1; }
+.app-editor-scroll { overflow-y:auto; overscroll-behavior:contain; min-height:0; padding:18px 25px 15px; }
+.app-editor-footer { display:flex; flex-shrink:0; justify-content:flex-end; gap:10px; padding:13px 25px; border-top:1px solid var(--border-subtle); background:var(--card); }
+.launch-mode-choice { display:flex; min-width:0; min-height:52px; align-items:center; justify-content:center; gap:9px; padding:9px 10px; border:1px solid var(--border); border-radius:12px; background:var(--card); color:var(--muted-foreground); font:600 12px/1.3 inherit; cursor:pointer; transition:background-color .15s,border-color .15s,box-shadow .15s; }
+.launch-mode-choice:hover { border-color:var(--border-strong); background:var(--surface-tinted); }
+.launch-mode-choice[data-state="checked"] { border-color:var(--primary); background:var(--primary-subtle); color:var(--primary); box-shadow:0 0 0 1px var(--primary-soft); }
+.launch-mode-choice:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+.launch-mode-indicator { display:grid; place-items:center; flex:none; width:16px; height:16px; border:1.5px solid var(--border-strong); border-radius:50%; background:var(--card); }
+.launch-mode-choice[data-state="checked"] .launch-mode-indicator { border-color:var(--primary); }
+.launch-mode-dot { display:block; width:8px; height:8px; border-radius:50%; background:var(--primary); }
+@media (max-height: 620px) { .app-editor-header { padding-top:13px; padding-bottom:11px; } .app-editor-scroll { padding-top:12px; padding-bottom:12px; } .app-editor-footer { padding-top:10px; padding-bottom:10px; } }
