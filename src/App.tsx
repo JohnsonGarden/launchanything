@@ -11,6 +11,7 @@ import type { AppEntry, AppState, ProxyProfile } from "@/lib/models";
 import { displayEndpoint } from "@/lib/validation";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -106,6 +107,7 @@ export default function App() {
 
     <main className="main-panel">
       <header className="topbar"><div className="flex items-center gap-2 text-[12px] font-medium text-[var(--soft-foreground)]">{t("nav.breadcrumb")} <ChevronRight size={13}/> <span className="text-[var(--foreground)]">{view === "apps" ? t("nav.apps") : view === "proxies" ? t("nav.proxies") : t("nav.about")}</span></div><div className="topbar-actions">
+        <ThemeSwitch/>
         <LanguageSwitch locale={locale} onChange={setLocale} label={t("nav.language")} chineseLabel={t("nav.chinese")} englishLabel={t("nav.english")}/>
         <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--muted-foreground)]"><span className="size-1.5 rounded-full bg-[var(--success)]"/> {t("nav.local")}</div>
       </div></header>

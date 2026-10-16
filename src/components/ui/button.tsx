@@ -8,7 +8,7 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[0_2px_7px_rgba(209,36,79,.18)] hover:bg-[var(--primary-hover)]",
+        default: "bg-[var(--primary)] text-[var(--primary-foreground)] theme-primary-button hover:bg-[var(--primary-hover)]",
         secondary: "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--surface-tinted)]",
         ghost: "text-[var(--muted-foreground)] hover:bg-[var(--surface-tinted)] hover:text-[var(--foreground)]",
         destructive: "text-[var(--destructive)] hover:bg-[var(--destructive-subtle)]",
