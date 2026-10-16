@@ -15,7 +15,7 @@ export function ThemeSwitch() {
   return <Select.Root value={theme} onValueChange={(next) => setTheme(next as Theme)}>
     <Select.Trigger aria-label={t("theme.title")} title={label} className="theme-switch-trigger">
       {theme === "monochrome" ? <Moon size={15} aria-hidden="true"/> : <Palette size={15} aria-hidden="true"/>}
-      <span className="hidden min-[1100px]:inline">{label}</span>
+      <span className="hidden min-[950px]:inline">{label}</span>
       <ChevronDown size={13} aria-hidden="true"/>
     </Select.Trigger>
     <Select.Portal>
