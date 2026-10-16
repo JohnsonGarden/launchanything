@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { readTheme } from "@/lib/theme";
-
-describe("theme persistence and safe fallback",()=>{
-  it("defaults new installs and unknown values to the existing rose skin",()=>{
+import { readTheme, THEMES } from "@/lib/theme";
+describe("persistent global appearance", () => {
+  it("supports three selectable skins", () => {
+    expect(THEMES).toEqual(["rose", "parasol", "monochrome"]);
+  });
+  it("defaults missing or invalid storage to rose", () => {
     expect(readTheme(null)).toBe("rose");
     expect(readTheme("unknown")).toBe("rose");
     expect(readTheme("rose")).toBe("rose");
   });
-  it("restores shadcn monochrome dark explicitly",()=>{
+  it("restores both new themes", () => {
+    expect(readTheme("parasol")).toBe("parasol");
     expect(readTheme("monochrome")).toBe("monochrome");
   });
 });

@@ -9,7 +9,7 @@ describe("launch method semantic radio choices",()=>{
     expect((html.match(/role="radio"/g)??[]).length).toBe(3);
     expect((html.match(/aria-checked="true"/g)??[]).length).toBe(1);
     expect(html).toContain("grid-cols-3 gap-3");
-    expect(html).toContain("max-[410px]:grid-cols-1");
+    expect(html).not.toContain("max-[410px]:grid-cols-1");
     expect(html).toContain("Chromium 参数");
     expect(html).toContain('value="chromium"');
   });

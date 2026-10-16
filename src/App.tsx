@@ -11,6 +11,7 @@ import type { AppEntry, AppState, ProxyProfile } from "@/lib/models";
 import { displayEndpoint } from "@/lib/validation";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";

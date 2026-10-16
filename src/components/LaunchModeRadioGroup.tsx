@@ -14,7 +14,7 @@ interface Props {
 export function LaunchModeRadioGroup({ value, onChange, label, labels }: Props) {
   return <fieldset className="min-w-0">
     <legend className="mb-2 text-[10px] font-bold tracking-[.105em] text-[var(--muted-foreground)]">{label}</legend>
-    <RadioGroup.Root aria-label={label} value={value} onValueChange={(next) => onChange(next as LaunchMode)} className="grid grid-cols-3 gap-3 max-[410px]:grid-cols-1">
+    <RadioGroup.Root aria-label={label} value={value} onValueChange={(next) => onChange(next as LaunchMode)} className="grid grid-cols-3 gap-3">
       {LAUNCH_MODES.map((mode) => <RadioGroup.Item
         key={mode}
         value={mode}
