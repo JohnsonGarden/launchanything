@@ -34,6 +34,8 @@ jobs:
         run: npm run test:release-contract
       - name: Agent macOS installer tests
         run: npm run test:macos-installer
+      - name: Full Agent bootstrap path with mock native tools
+        run: npm run test:macos-installer-e2e
       - name: Read-only Agent installer environment diagnostic
         run: bash scripts/install-macos.sh --check --json
       - name: Typecheck
