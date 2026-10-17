@@ -28,6 +28,14 @@ describe("translations", () => {
     expect(translate("zh-CN", "apps.add")).toBe("添加应用");
     expect(translate("en", "apps.add")).toBe("Add application");
   });
+  it("shows the approved poetic theme names in both languages", () => {
+    expect(translate("zh-CN", "theme.rose")).toBe("玫瑰轻语");
+    expect(translate("en", "theme.rose")).toBe("Rose Whisper");
+    expect(translate("zh-CN", "theme.parasol")).toBe("晴光漫野");
+    expect(translate("en", "theme.parasol")).toBe("Fields of Light");
+    expect(translate("zh-CN", "theme.dark")).toBe("月下墨影");
+    expect(translate("en", "theme.dark")).toBe("Moonlit Ink");
+  });
   it("translates validation failures without changing the validator contract", () => {
     expect(translatedValidationError("Choose a proxy profile.", (key) => translate("zh-CN", key))).toBe("请选择代理配置。");
     expect(translatedValidationError("Unexpected system error", (key) => translate("zh-CN", key))).toBe("Unexpected system error");
