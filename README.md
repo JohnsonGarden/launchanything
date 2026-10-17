@@ -40,6 +40,8 @@ INSTALLER="$(mktemp "${TMPDIR:-/tmp}/launchanything-installer.XXXXXXXX")" && cur
 | Linux | 不支持 | 尚无 Linux 客户端 |
 
 ### 体验 Windows / Intel 测试构建
+> **Intel Mac 新版预览打包正在验证：** 最新 `main` 功能（含三套主题与 Applications 默认目录选择器）已移植到 [Intel x86_64 GitHub Actions 构建](https://github.com/JohnsonGarden/launchanything/actions/workflows/macos-intel-preview.yml)，生成原生 Intel 未签名 DMG 和 ZIP。此分支仍需 [Intel Mac 真机验收](docs/INTEL_PREVIEW.md)，不等于正式 Intel 稳定支持。
+
 
 已经生成的**开发工件**在上述 Intel / Windows CI 页面底部的 **Artifacts** 中：
 
