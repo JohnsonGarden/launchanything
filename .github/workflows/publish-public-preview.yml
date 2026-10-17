@@ -1,0 +1,143 @@
+name: Publish opt-in unsigned macOS arm64 prerelease
+
+# This lane explicitly produces a public PRE-RELEASE, never a stable release.
+# The branch must be exactly one docs-only marker commit ahead of current main.
+on:
+  push:
+    branches:
+      - 'publish-preview/v0.1.0-preview.1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-macos-preview-v0.1.0-preview.1
+  cancel-in-progress: false
+
+jobs:
+  publish-unsigned-arm64:
+    name: Validate main, build, then publish unsigned arm64 prerelease
+    runs-on: macos-latest
+    timeout-minutes: 75
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: v0.1.0-preview.1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate explicit publish marker and trusted main source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/publish-preview/v0.1.0-preview.1"
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = arm64
+          MAIN_SHA="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          test "$(git rev-parse HEAD^)" = "$MAIN_SHA"
+          test "$(git diff --name-only "$MAIN_SHA" "$GITHUB_SHA")" = "docs/releases/PUBLISH-v0.1.0-preview.1.md"
+          test "$(git rev-list --count "$MAIN_SHA..$GITHUB_SHA")" = "1"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          TAURI_VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          test "$PKG_VERSION" = 0.1.0
+          test "$TAURI_VERSION" = "$PKG_VERSION"
+          test "$RELEASE_TAG" = "v${PKG_VERSION}-preview.1"
+          STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" || true)"
+          case "$STATUS" in
+            404) ;;
+            200) echo "Tag already exists: $RELEASE_TAG" >&2; exit 1 ;;
+            *) echo "Cannot verify tag availability: HTTP $STATUS" >&2; exit 1 ;;
+          esac
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Public preview already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          echo "MAIN_SHA=$MAIN_SHA" >> "$GITHUB_ENV"
+          # Compile exactly the accepted main commit, not the publishing marker.
+          git checkout --detach "$MAIN_SHA"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run preflight and regression tests before release
+        run: |
+          npm run doctor
+          npm run test:release-contract
+          npm run typecheck
+          npm test
+          npm run test:macos-installer
+          npm run test:macos-installer-e2e
+          npm run prepare:macos
+          npm run test:macos-launch
+          npm run test:rust
+      - name: Build Apple Silicon DMG and macOS app
+        run: npm run build
+
+      - name: Verify native architecture and generate user-download assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="src-tauri/target/release/bundle"
+          APP="$BASE/macos/LaunchAnything.app"
+          HELPER="$APP/Contents/Resources/bin/launchanything-macos-helper"
+          APP_BIN="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -print -quit)"
+          DMG="$(find "$BASE/dmg" -maxdepth 1 -type f -name '*.dmg' -print -quit)"
+          test -n "$APP_BIN"
+          test -n "$DMG"
+          test -f "$HELPER"
+          xcrun lipo "$APP_BIN" -verify_arch arm64
+          xcrun lipo "$HELPER" -verify_arch arm64
+          mkdir -p release-assets
+          cp "$DMG" "release-assets/LaunchAnything_v0.1.0_preview1_macos_arm64_UNSIGNED.dmg"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" \
+            "release-assets/LaunchAnything_v0.1.0_preview1_macos_arm64_UNSIGNED_app.zip"
+          (
+            cd release-assets
+            shasum -a 256 *.dmg *.zip > SHA256SUMS.txt
+            shasum -a 256 -c SHA256SUMS.txt
+          )
+          {
+            echo "PUBLIC PRERELEASE: $RELEASE_TAG"
+            echo "Status: UNSIGNED, UNNOTARIZED, not stable"
+            echo "Accepted main source: https://github.com/$GITHUB_REPOSITORY/commit/$MAIN_SHA"
+            echo "Build: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "macOS 12+ Apple Silicon only; Intel is not included here."
+          } > release-assets/BUILD_INFO.txt
+
+      - name: Publish public GitHub Pre-release (never Latest or stable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" release-assets/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$MAIN_SHA" \
+            --prerelease \
+            --latest=false \
+            --title "LaunchAnything v0.1.0 Preview 1 — unsigned macOS Apple Silicon" \
+            --notes-file docs/releases/public-preview-v0.1.0.md
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,isPrerelease,isDraft,assets,url
+
+      - name: Publish summary
+        run: |
+          {
+            echo "## LaunchAnything public unsigned prerelease"
+            echo ""
+            echo "View https://github.com/$GITHUB_REPOSITORY/releases/tag/$RELEASE_TAG"
+            echo "This release is **unsigned, unnotarized and explicitly prerelease**."
+          } >> "$GITHUB_STEP_SUMMARY"
