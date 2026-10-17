@@ -8,13 +8,13 @@
 
 LaunchAnything is a **lightweight, privacy-first, cross-platform desktop proxy launcher**. Assign reusable local HTTP / SOCKS5 profiles to individual apps and start them with the chosen proxy settings **without changing the system-wide proxy**. Its React, TypeScript, Tailwind and shadcn-style UI has a minimal rose theme and instant Simplified Chinese / English switching.
 
-> **Release status — October 17, 2026:** `main` contains the **v0.1.0 macOS Apple Silicon stable source baseline**, exercised on a real Mac and verified by full native app packaging CI. **macOS Intel and Windows x64 development branches also pass native CI and produce unsigned installer artifacts, but have not passed real-device acceptance and are not merged into `main`.** The [Apple Silicon unsigned public Pre-release](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1) is now available; a signed/notarized Stable Release remains a future milestone. Unsigned/unnotarized test binaries are not production releases.
+> **Release status — October 17, 2026:** Apple Silicon and native Intel macOS builds have both passed basic on-device installation and proxy-launch testing. [v0.1.0-preview.2](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2) provides separate **unsigned, unnotarized DMGs** and fixes the two native-look dropdowns. **This is a developer Pre-release, NOT a signed Stable Release.** Windows x64 remains an unsigned Actions artifact only; no Windows Release is published.
 
 ## Download and install
-> **GitHub Pre-release is available now:** [Download the prebuilt Apple Silicon DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.1/LaunchAnything_v0.1.0_preview1_macos_arm64_UNSIGNED.dmg). It is **unsigned, unnotarized, and intended for developer testing only**, not a stable release. Read the [preview safety notes](docs/releases/public-preview-v0.1.0.md) and verify its SHA-256 checksum. No local compilation required.
+> **Prebuilt macOS developer DMGs:** [Apple Silicon arm64](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_arm64_UNSIGNED.dmg) · [Intel x86_64](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_x86_64_UNSIGNED.dmg) · [Release notes and checksums](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2). Pick the correct CPU architecture. Both are unsigned and unnotarized; read [Preview 2 installation notes](docs/releases/public-preview-v0.1.0-preview2.md) before running.
 
 
-> **Unsigned macOS Apple Silicon developer preview:** A prebuilt DMG (no local compilation required) can be downloaded from [GitHub Actions — Developer Preview](https://github.com/JohnsonGarden/launchanything/actions/workflows/developer-preview.yml) (GitHub login may be required). This is **unsigned, unnotarized and not a stable release**. Follow the [checksum and macOS per-app Open Anyway guide](docs/UNSIGNED_PREVIEW.md); never disable Gatekeeper globally. A public unsigned Pre-release is already available directly from [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1).
+> Historical GitHub Actions artifacts are still available for debugging. Prefer the immutable public Pre-release assets and checksums for normal testing, and do not disable macOS security protections globally.
 
 ### One-command Mac installation
 
@@ -36,9 +36,9 @@ Review the [installer source](scripts/install-macos.sh) before executing remote 
 
 | Platform | Availability | Build and verification |
 |---|---|---|
-| **macOS Apple Silicon (M-series, arm64)** | **Public unsigned Pre-release (NOT stable)** | [v0.1.0-preview.1 DMG](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1); tested on a real Apple Silicon Mac; Apple signing/notarization remains pending |
-| **macOS Intel (x86_64)** | **Unsigned development preview; device acceptance pending** | [Native Intel CI passed](https://github.com/JohnsonGarden/launchanything/actions/runs/38745634965), producing `.app`; [development PR #3](https://github.com/JohnsonGarden/launchanything/pull/3) |
-| **Windows 10/11 x64** | **Unsigned development preview; device acceptance pending** | [Windows CI passed](https://github.com/JohnsonGarden/launchanything/actions/runs/38745714406), producing an NSIS `setup.exe`; [development PR #4](https://github.com/JohnsonGarden/launchanything/pull/4) |
+| **macOS Apple Silicon (arm64)** | **Public unsigned Pre-release** | [Preview 2 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_arm64_UNSIGNED.dmg), [Preview 1 history](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1) |
+| **macOS Intel (x86_64)** | **Public unsigned Pre-release** | [Preview 2 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_x86_64_UNSIGNED.dmg); [prior Intel CI](https://github.com/JohnsonGarden/launchanything/actions/runs/38745634965) |
+| **Windows 10/11 x64** | **CI-only unsigned testing; no Release** | [Updated test build](https://github.com/JohnsonGarden/launchanything/actions/runs/39000990367); [prior Windows CI](https://github.com/JohnsonGarden/launchanything/actions/runs/38745714406); [PR #4](https://github.com/JohnsonGarden/launchanything/pull/4) |
 | Linux | Not supported | No Linux client |
 
 ### Preview the Windows / Intel development builds
