@@ -8,13 +8,15 @@
 
 LaunchAnything 是一款**轻量、隐私优先的跨平台桌面代理启动器**：为不同 APP 设置自己的 HTTP / SOCKS5 本地代理，按需启动应用，**不修改系统全局代理**。界面采用 React、TypeScript、Tailwind 与 shadcn/ui 设计规范，使用简洁的玫瑰粉色系，支持中文 / English 即时切换。
 
-> **2026-10-17 发行状态：** macOS Apple Silicon 和 Intel 两种原生架构都已在真实 Mac 上验证基础启动及代理拉起功能，已公开的 [v0.1.0-preview.2](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2) 将同时提供两套未签名 DMG，并修复“代理协议”和“绑定代理”原生下拉框样式。**两套都未经 Apple 签名与公证，属于开发者 Pre-release，非正式稳定版。** Windows x64 仅提供 CI 测试工件，不公开发布 Windows Release。
+> **2026-10-17 发行状态：** macOS Apple Silicon 和 Intel 两种原生架构都已在真实 Mac 上验证基础启动及代理拉起功能，已公开的 [v0.1.0-preview.3](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.3) 将同时提供两套未签名 DMG，并修复“代理协议”和“绑定代理”原生下拉框样式。**两套都未经 Apple 签名与公证，属于开发者 Pre-release，非正式稳定版。** Windows x64 仅提供 CI 测试工件，不公开发布 Windows Release。
+
+> **Preview 3 新增：** 顶部主题切换器采用极简圆角色块，三套主题更名为「玫瑰轻语 / Rose Whisper」「晴光漫野 / Fields of Light」「月下墨影 / Moonlit Ink」。原有主题偏好不变；Windows 仍仅保留 CI 测试包。
 
 ## 下载与安装
-> **Mac 下载入口（未签名 Pre-release）：** [Apple Silicon arm64 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_arm64_UNSIGNED.dmg) · [Intel x86_64 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_x86_64_UNSIGNED.dmg) · [下载与 SHA-256 校验](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2)。按芯片选择，均无需本地编译；首次启动仅在确认下载可信且属于未识别开发者拦截时，对该应用执行“仍要打开”。
+> **Mac 下载入口（未签名 Pre-release）：** [Apple Silicon arm64 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.3/LaunchAnything_v0.1.0_preview3_macos_arm64_UNSIGNED.dmg) · [Intel x86_64 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.3/LaunchAnything_v0.1.0_preview3_macos_x86_64_UNSIGNED.dmg) · [下载与 SHA-256 校验](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.3)。按芯片选择，均无需本地编译；首次启动仅在确认下载可信且属于未识别开发者拦截时，对该应用执行“仍要打开”。
 
 
-> 开发者仍可使用 [Actions 构建工件](https://github.com/JohnsonGarden/launchanything/actions/workflows/developer-preview.yml) 排查问题；日常测试建议从 Releases 下载固定版本。安全说明见 [Preview 2](docs/releases/public-preview-v0.1.0-preview2.md)。
+> 开发者仍可使用 [Actions 构建工件](https://github.com/JohnsonGarden/launchanything/actions/workflows/developer-preview.yml) 排查问题；日常测试建议从 Releases 下载固定版本。安全说明见 [Preview 3](docs/releases/public-preview-v0.1.0-preview3.md)。
 
 ### Mac 快捷安装：复制一条命令
 
@@ -32,17 +34,17 @@ INSTALLER="$(mktemp "${TMPDIR:-/tmp}/launchanything-installer.XXXXXXXX")" && cur
 
 > Intel Mac 现在同样可以下载原生 x86_64 预览 DMG，而不必执行实验性本地编译；Windows 客户端仅提供独立 Actions 测试构建，**不能**使用此 macOS 安装脚本。经 Apple 签名与公证的正式稳定版仍需等待。
 
-**不希望本地编译的用户：** Apple Silicon 和 Intel Mac 都可以从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2) 下载对应芯片的未签名 DMG，无需 Node.js、Rust 或本地编译；Windows 仍只开放 Actions 测试包。
+**不希望本地编译的用户：** Apple Silicon 和 Intel Mac 都可以从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.3) 下载对应芯片的未签名 DMG，无需 Node.js、Rust 或本地编译；Windows 仍只开放 Actions 测试包。
 
 | 系统 / 架构 | 当前状态 | 下载 / 验证 |
 |---|---|---|
-| **macOS Apple Silicon（arm64）** | **公开未签名 Pre-release** | [Preview 2 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_arm64_UNSIGNED.dmg)；[历史 Preview 1](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1) |
-| **macOS Intel（x86_64）** | **公开未签名 Pre-release** | [Preview 2 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_x86_64_UNSIGNED.dmg)；[历史 Intel 构建](https://github.com/JohnsonGarden/launchanything/actions/runs/38745634965) |
+| **macOS Apple Silicon（arm64）** | **公开未签名 Pre-release** | [Preview 3 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.3/LaunchAnything_v0.1.0_preview3_macos_arm64_UNSIGNED.dmg)；[历史 Preview 1](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1) |
+| **macOS Intel（x86_64）** | **公开未签名 Pre-release** | [Preview 3 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.3/LaunchAnything_v0.1.0_preview3_macos_x86_64_UNSIGNED.dmg)；[历史 Intel 构建](https://github.com/JohnsonGarden/launchanything/actions/runs/38745634965) |
 | **Windows 10/11 x64** | **仅 CI 开发测试，不发布 Release** | [本次修复版 CI](https://github.com/JohnsonGarden/launchanything/actions/runs/39000990367)；[旧版 CI](https://github.com/JohnsonGarden/launchanything/actions/runs/38745714406)；[PR #4](https://github.com/JohnsonGarden/launchanything/pull/4) |
 | Linux | 不支持 | 尚无 Linux 客户端 |
 
 ### 体验 Windows / Intel 测试构建
-> **Intel Mac 测试进展：** Intel x86_64 已通过原生 CI 和基础真机启动/代理拉起测试，现与 arm64 一起发布 [Preview 2](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2)。两者仍为未签名、未公证的开发者预览版，不应宣传为 Apple 认证稳定发行。
+> **Intel Mac 测试进展：** Intel x86_64 已通过原生 CI 和基础真机启动/代理拉起测试，现与 arm64 一起发布 [Preview 3](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.3)。两者仍为未签名、未公证的开发者预览版，不应宣传为 Apple 认证稳定发行。
 
 
 已经生成的**开发工件**在上述 Intel / Windows CI 页面底部的 **Artifacts** 中：
