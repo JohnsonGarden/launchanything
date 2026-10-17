@@ -40,6 +40,8 @@ Review the [installer source](scripts/install-macos.sh) before executing remote 
 | Linux | Not supported | No Linux client |
 
 ### Preview the Windows / Intel development builds
+> **Updated Intel Mac preview:** Native x86_64 [GitHub Actions workflow](https://github.com/JohnsonGarden/launchanything/actions/workflows/macos-intel-preview.yml) integrates the latest mainline UI and app picker, producing an unsigned Intel DMG and ZIP. The build requires [real Intel Mac acceptance](docs/INTEL_PREVIEW.md) before it can be called stable.
+
 
 The build artifacts are available in the **Artifacts** section at the bottom of the Intel and Windows CI run pages linked above:
 
