@@ -20,7 +20,11 @@
     "test:macos-launch": "node --test scripts/macos-launch.test.mjs",
     "test:release-contract": "node --test scripts/release-contract.test.mjs",
     "test:macos-installer": "node --test scripts/install-macos.test.mjs",
-    "test:macos-installer-e2e": "node --test scripts/install-macos.e2e.test.mjs"
+    "test:macos-installer-e2e": "node --test scripts/install-macos.e2e.test.mjs",
+    "prebuild:macos-intel": "npm run doctor",
+    "build:macos-intel": "LAUNCHANYTHING_MACOS_ARCH=x86_64 tauri build --target x86_64-apple-darwin",
+    "test:intel-contract": "node --test scripts/intel-build.test.mjs",
+    "verify:macos-intel": "bash scripts/verify-macos-architecture.sh x86_64"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",
