@@ -38,8 +38,8 @@ describe("Intel GitHub Actions preview distribution", () => {
     assert.match(workflow, /verify:macos-intel/);
   });
   it("emits DMG, app ZIP, checksum, provenance, and never releases as stable", () => {
-    assert.match(workflow, /\\.dmg/);
-    assert.match(workflow, /\\.zip/);
+    assert.match(workflow, /\.dmg/);
+    assert.match(workflow, /\.zip/);
     assert.match(workflow, /shasum -a 256/);
     assert.match(workflow, /BUILD_INFO/);
     assert.match(workflow, /upload-artifact@/);
