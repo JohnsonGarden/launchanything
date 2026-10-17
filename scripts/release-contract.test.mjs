@@ -80,3 +80,32 @@ describe("unsigned developer-preview workflow safety", () => {
     assert.match(previewDoc, /Apple Silicon/);
   });
 });
+
+
+const publicWorkflow = read("../.github/workflows/publish-public-preview.yml");
+const publicNotes = read("../docs/releases/public-preview-v0.1.0.md");
+
+describe("opt-in public prerelease contract", () => {
+  it("only responds to an explicit one-time release branch marker", () => {
+    assert.match(publicWorkflow, /publish-preview\/v0\.1\.0-preview\.1/);
+    assert.match(publicWorkflow, /PUBLISH-v0\.1\.0-preview\.1\.md/);
+    assert.match(publicWorkflow, /git diff --name-only/);
+    assert.match(publicWorkflow, /git rev-parse HEAD\^/);
+    assert.match(publicWorkflow, /checkout --detach/);
+  });
+  it("creates only a public unsigned GitHub prerelease, not Latest or Stable", () => {
+    assert.match(publicWorkflow, /gh release create/);
+    assert.match(publicWorkflow, /--prerelease/);
+    assert.match(publicWorkflow, /--latest=false/);
+    assert.doesNotMatch(publicWorkflow, /--draft=false|--prerelease=false|spctl --master-disable|xattr -cr/);
+    assert.match(publicWorkflow, /lipo/);
+    assert.match(publicWorkflow, /shasum -a 256/);
+  });
+  it("clearly labels the download as unsigned and unnotarized", () => {
+    assert.match(publicNotes, /UNSIGNED/);
+    assert.match(publicNotes, /UNNOTARIZED/);
+    assert.match(publicNotes, /SHA256SUMS/);
+    assert.match(publicNotes, /仍要打开/);
+    assert.match(publicNotes, /Intel/);
+  });
+});

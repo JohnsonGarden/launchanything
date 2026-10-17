@@ -12,7 +12,7 @@ LaunchAnything 面向普通用户的分发方式应是 GitHub **Releases 下载�
 
 macOS Apple Silicon 用户可选择[官方源码安装脚本](../scripts/install-macos.sh)在本机编译，无需预先安装 Node/Rust/Git。该脚本只安装用户目录内的工具链和应用，不关闭 Gatekeeper、不更改系统代理；首次 Xcode CLT 仍需用户通过系统安装窗口确认。详见 [Agent 安装手册](AGENT_INSTALL.md)。
 
-**重要区别：** 这种做法可以避免分发未签名二进制文件，但需要联网、数 GB 空间与数十分钟编译，并非签名和公证的等价替代。公开发布 DMG 时仍应依照下面的检查项完成签名、公证和真机安装验收。
+**重要区别：** 这种做法可以避免分发未签名二进制文件，但需要联网、数 GB 空间与数十分钟编译，并非签名和公证的等价替代。面向普通用户的**稳定版 DMG** 仍须依照下面检查项完成签名、公证和真机安装验收。维护者可另行明确授权公开未签名 **Pre-release**，但必须在标签、安装包文件名、下载说明中突出测试属性和安全限制。
 
 ### 先生成 Apple Silicon Draft Release
 
@@ -23,6 +23,12 @@ macOS Apple Silicon 用户可选择[官方源码安装脚本](../scripts/install
 5. 打开 **Releases** 草稿，核对文件名称、SHA256、发布说明和安全状态。未经签名、公证及安装验收，**不得直接将草稿发布为公开 Stable Release**。
 
 执行期间的 GitHub Actions Artifact 是临时构建产物，不代替稳定下载链接。草稿 Release 不会对普通用户显示为可下载版本。
+
+### 无开发者证书时：公开未签名 Pre-release（开发者测试）
+
+维护者选择先将已在 Apple Silicon Mac 真机安装验收的源码构建，通过 **GitHub Releases → Pre-release** 提供给愿意测试的开发者。它**不等于正式稳定发行**：标签使用 `v0.1.0-preview.1`，文件名含 `UNSIGNED`，发布说明要求 SHA-256 校验并明确未经过 Apple Developer ID 签名及公证。macOS 初次启动可以按 Apple 官方指引，在“隐私与安全性”中仅对这个应用选择“仍要打开”；**不建议全局关闭 Gatekeeper、SIP 或清除隔离属性**。
+
+公开 Pre-release 采用 `publish-public-preview.yml` 的严格单文件发布标记分支触发，从当前主线提交构建，测试/校验通过后才发布，并设置 `prerelease=true`、不设 Latest。原 `release-draft.yml` 继续严格保持未签名工件只能作为草稿的约束，用于未来签名公证的正式发布工作。
 
 ### 真正面向普通用户公开前必须完成
 
@@ -53,6 +59,12 @@ This is not an equivalent substitute for a signed and notarized DMG. Native comp
 2. GitHub → **Actions** → **Prepare macOS release draft** → **Run workflow** on `main`, version `v0.1.0`.
 3. The workflow verifies versions and architecture, builds unsigned arm64 DMG and ZIP, checks bundled helper, generates SHA256SUMS, uploads the artifacts and creates a **draft prerelease**.
 4. Review the draft and checksums. **Do not publish** as a public stable release while the artifacts are unsigned, unnotarized or untested on a fresh Mac.
+
+### Public unsigned Pre-release for developer testing
+
+The maintainer explicitly opted to publish a separate **unsigned, unnotarized GitHub Pre-release**, with an obvious `v0.1.0-preview.1` tag, `UNSIGNED` file names, SHA256 checksums, and per-app macOS **Privacy & Security → Open Anyway** guidance. It is **not a stable release**, does not bypass Gatekeeper globally and is not a substitute for signing or notarization.
+
+The opt-in `publish-public-preview.yml` workflow accepts only a single docs-only marker commit derived from current main, performs tests and build verification, then publishes a public `prerelease=true` without setting Latest. The existing draft release workflow remains unchanged; signed/notarized stable distribution still requires the checks below.
 
 ### Public release checklist
 
