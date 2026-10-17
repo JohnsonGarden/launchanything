@@ -1,0 +1,109 @@
+name: macOS Intel x86_64 unsigned developer preview
+
+on:
+  push:
+    branches:
+      - 'release-preview/macos-intel-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-intel-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  intel-native:
+    name: Build, test and package native Intel DMG
+    runs-on: macos-15-intel
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Verify native Intel runner and package version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = x86_64
+          test "$(node -p "require('./package.json').version")" = "$(node -p "require('./src-tauri/tauri.conf.json').version")"
+      - name: Install npm dependencies
+        run: npm install --no-audit --no-fund
+      - name: Intel build contracts and release checks
+        run: |
+          npm run test:intel-contract
+          npm run test:release-contract
+          npm run test:macos-installer
+          npm run test:macos-installer-e2e
+      - name: Developer preflight
+        run: npm run doctor
+      - name: TypeScript and UI regression tests
+        run: npm run typecheck && npm test
+      - name: Compile and verify native Swift helper
+        run: npm run prepare:macos && npm run test:macos-launch
+      - name: Rust regression tests
+        run: npm run test:rust
+      - name: Build Intel native app and DMG
+        env:
+          CI: 'true'
+        run: npm run build:macos-intel
+      - name: Verify Intel binary architecture
+        run: npm run verify:macos-intel
+      - name: Prepare verifiable unsigned Intel installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="src-tauri/target/x86_64-apple-darwin/release/bundle"
+          APP="$BASE/macos/LaunchAnything.app"
+          DMG="$(find "$BASE/dmg" -maxdepth 1 -name '*.dmg' -type f -print -quit)"
+          test -d "$APP"
+          test -n "$DMG"
+          VERSION="$(node -p "require('./package.json').version")"
+          PREFIX="LaunchAnything_v${VERSION}_macos_x86_64_UNSIGNED"
+          mkdir -p release-assets
+          cp "$DMG" "release-assets/${PREFIX}.dmg"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "release-assets/${PREFIX}_app.zip"
+          (
+            cd release-assets
+            shasum -a 256 *.dmg *.zip > SHA256SUMS.txt
+            shasum -a 256 -c SHA256SUMS.txt
+          )
+          {
+            echo "LaunchAnything ${VERSION} | macOS Intel x86_64 | UNSIGNED, NOT NOTARIZED"
+            echo "Source: https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+            echo "Build: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "Intel actual end-user machine acceptance: PENDING"
+            echo "Not a stable release. Do not disable Gatekeeper globally."
+            echo "See docs/INTEL_PREVIEW.md before installing."
+          } > release-assets/BUILD_INFO.txt
+          ls -lh release-assets
+      - name: Upload Intel DMG and verification files
+        uses: actions/upload-artifact@v4
+        with:
+          name: LaunchAnything-v0.1.0-macos-x86_64-UNSIGNED
+          path: release-assets/
+          retention-days: 30
+          if-no-files-found: error
+          compression-level: 0
+      - name: Build summary
+        shell: bash
+        run: |
+          {
+            echo "## Intel macOS x86_64 unsigned developer preview"
+            echo ""
+            echo "Download \`LaunchAnything-v0.1.0-macos-x86_64-UNSIGNED\` in **Artifacts**."
+            echo "Extract the GitHub ZIP and verify \`shasum -a 256 -c SHA256SUMS.txt\` before installing."
+            echo "This DMG is **unsigned, not notarized, and not yet smoke-tested on a real Intel Mac**."
+            echo "See docs/INTEL_PREVIEW.md; do not globally disable macOS security."
+          } >> "$GITHUB_STEP_SUMMARY"
