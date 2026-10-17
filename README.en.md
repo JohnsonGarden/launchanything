@@ -11,6 +11,8 @@ LaunchAnything is a **lightweight, privacy-first, cross-platform desktop proxy l
 > **Release status — October 15, 2026:** `main` contains the **v0.1.0 macOS Apple Silicon stable source baseline**, exercised on a real Mac and verified by full native app packaging CI. **macOS Intel and Windows x64 development branches also pass native CI and produce unsigned installer artifacts, but have not passed real-device acceptance and are not merged into `main`.** There is currently **no public download on [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases)**; an Apple Silicon draft-release workflow is being prepared. Unsigned/unnotarized test binaries are not production releases.
 
 ## Download and install
+> **Upcoming GitHub Pre-release:** Apple Silicon v0.1.0 Preview 1 will provide a prebuilt **unsigned, unnotarized** DMG for developer testing, not a stable release. Once published, download it from [GitHub Releases](https://github.com/JohnsonGarden/launchanything/releases) and read the [preview safety notes](docs/releases/public-preview-v0.1.0.md). Use macOS per-app Open Anyway, not global Gatekeeper disabling.
+
 
 > **Unsigned macOS Apple Silicon developer preview:** A prebuilt DMG (no local compilation required) can be downloaded from [GitHub Actions — Developer Preview](https://github.com/JohnsonGarden/launchanything/actions/workflows/developer-preview.yml) (GitHub login may be required). This is **unsigned, unnotarized and not a stable release**. Follow the [checksum and macOS per-app Open Anyway guide](docs/UNSIGNED_PREVIEW.md); never disable Gatekeeper globally. The official Release is still being prepared.
 
