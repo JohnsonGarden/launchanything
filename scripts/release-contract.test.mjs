@@ -109,3 +109,34 @@ describe("opt-in public prerelease contract", () => {
     assert.match(publicNotes, /Intel/);
   });
 });
+
+
+const dualPreview = read("../.github/workflows/publish-dual-macos-preview.yml");
+const dualNotes = read("../docs/releases/public-preview-v0.1.0-preview2.md");
+
+describe("guarded arm64 and Intel unsigned public preview 2", () => {
+  it("requires exactly one docs-only opt-in marker above the accepted main commit", () => {
+    assert.ok(dualPreview.includes("publish-preview/v0.1.0-preview.2"));
+    assert.ok(dualPreview.includes("PUBLISH-v0.1.0-preview.2.md"));
+    assert.ok(dualPreview.includes("git rev-parse HEAD^"));
+    assert.ok(dualPreview.includes("git diff --name-only"));
+    assert.ok(dualPreview.includes("main_sha"));
+  });
+  it("builds on both native Mac architectures and verifies both helpers before public publication", () => {
+    for (const expected of [
+      "macos-latest", "macos-15-intel", "aarch64-apple-darwin", "x86_64-apple-darwin",
+      "verify:macos-intel", "xcrun lipo", "SHA256SUMS.txt",
+      "actions/download-artifact@v4", "gh release create",
+      "--prerelease", "--latest=false",
+    ]) assert.ok(dualPreview.includes(expected), expected);
+    assert.ok(!dualPreview.includes("--prerelease=false"));
+    assert.ok(!dualPreview.includes("spctl --master-disable"));
+    assert.ok(!dualPreview.includes("xattr -cr"));
+  });
+  it("does not advertise signed stable Mac builds or any Windows installer", () => {
+    assert.ok(dualNotes.includes("UNSIGNED"));
+    assert.ok(dualNotes.includes("NOT NOTARIZED"));
+    assert.ok(dualNotes.includes("Intel"));
+    assert.ok(dualNotes.includes("Windows"));
+  });
+});
