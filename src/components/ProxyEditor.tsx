@@ -9,6 +9,7 @@ import { translatedValidationError } from "@/lib/validationI18n";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { FormSelect } from "@/components/ui/select";
 
 interface Props { open: boolean; initial?: ProxyProfile | null; onOpenChange: (next: boolean) => void; onSave: (profile: ProxyProfile) => Promise<void> }
 const blank = (): ProxyProfile => ({ id: crypto.randomUUID(), name: "", scheme: "http", host: "127.0.0.1", port: 7890, bypass: ["localhost", "127.0.0.1", "::1"] });
@@ -47,7 +48,7 @@ export function ProxyEditor({ open, initial, onOpenChange, onSave }: Props) {
     <form onSubmit={submit} className="space-y-5">
       <Field label={t("proxyForm.name")}><Input autoFocus placeholder={t("proxyForm.namePlaceholder")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
       <div className="grid grid-cols-[1fr_1.2fr_.8fr] gap-3">
-        <Field label={t("proxyForm.protocol")}><select className="field-select" value={form.scheme} onChange={(e) => setForm({ ...form, scheme: e.target.value as ProxyScheme })}><option value="http">HTTP</option><option value="socks5">SOCKS5</option></select></Field>
+        <Field label={t("proxyForm.protocol")}><FormSelect ariaLabel={t("proxyForm.protocol")} value={form.scheme} onValueChange={(scheme) => setForm((prev) => ({ ...prev, scheme: scheme as ProxyScheme }))} options={[{ value: "http", label: "HTTP" }, { value: "socks5", label: "SOCKS5" }]}/></Field>
         <Field label={t("proxyForm.host")}><Input spellCheck={false} value={form.host} onChange={(e) => setForm({ ...form, host: e.target.value })}/></Field>
         <Field label={t("proxyForm.port")}><Input inputMode="numeric" type="number" min={1} max={65535} value={form.port} onChange={(e) => setForm({ ...form, port: Number(e.target.value) })}/></Field>
       </div>
