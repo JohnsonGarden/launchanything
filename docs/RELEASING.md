@@ -6,7 +6,7 @@
 
 LaunchAnything 面向普通用户的分发方式应是 GitHub **Releases 下载页**，而不是要求安装 Node.js、Rust、Git 等开发工具。
 
-**当前状态：** `main` 的 macOS Apple Silicon v0.1.0 代码及完整打包 CI 通过，Intel 和 Windows 的测试版也分别在自己的功能分支通过原生 CI。但截至 2026-10-15，仓库尚无公开 GitHub Release，Apple Silicon 版尚未配置 Developer ID 签名与苹果公证，Windows 未完成代码签名和真机验收。
+**当前状态：** `main` 的 macOS Apple Silicon v0.1.0 代码及完整打包 CI 通过，Intel 和 Windows 的测试版也分别在自己的功能分支通过原生 CI。截至 2026-10-17，仓库已有 [Apple Silicon v0.1.0-preview.1 公开未签名 Pre-release](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1)，但仍无签名/公证的正式稳定版，Windows 未完成代码签名和真机验收。
 
 ### 用户本地快捷安装（无需签名公证的替代方案）
 
@@ -26,7 +26,7 @@ macOS Apple Silicon 用户可选择[官方源码安装脚本](../scripts/install
 
 ### 无开发者证书时：公开未签名 Pre-release（开发者测试）
 
-维护者选择先将已在 Apple Silicon Mac 真机安装验收的源码构建，通过 **GitHub Releases → Pre-release** 提供给愿意测试的开发者。它**不等于正式稳定发行**：标签使用 `v0.1.0-preview.1`，文件名含 `UNSIGNED`，发布说明要求 SHA-256 校验并明确未经过 Apple Developer ID 签名及公证。macOS 初次启动可以按 Apple 官方指引，在“隐私与安全性”中仅对这个应用选择“仍要打开”；**不建议全局关闭 Gatekeeper、SIP 或清除隔离属性**。
+维护者已将 Apple Silicon Mac 真机安装验收的源码构建，通过 [GitHub Releases → Pre-release](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1) 公开提供给愿意测试的开发者。它**不等于正式稳定发行**：标签使用 `v0.1.0-preview.1`，文件名含 `UNSIGNED`，发布说明要求 SHA-256 校验并明确未经过 Apple Developer ID 签名及公证。macOS 初次启动可以按 Apple 官方指引，在“隐私与安全性”中仅对这个应用选择“仍要打开”；**不建议全局关闭 Gatekeeper、SIP 或清除隔离属性**。
 
 公开 Pre-release 采用 `publish-public-preview.yml` 的严格单文件发布标记分支触发，从当前主线提交构建，测试/校验通过后才发布，并设置 `prerelease=true`、不设 Latest。原 `release-draft.yml` 继续严格保持未签名工件只能作为草稿的约束，用于未来签名公证的正式发布工作。
 
@@ -45,7 +45,7 @@ macOS Apple Silicon 用户可选择[官方源码安装脚本](../scripts/install
 
 GitHub **Releases** should be the primary distribution channel for non-technical users. They should not need to install Git, Rust, Node or build from source.
 
-As of October 15, 2026, the stable source is macOS Apple Silicon v0.1.0 with passing full app-bundle CI. Intel and Windows preview builds also pass native CI in their respective draft PRs, but real-device acceptance is pending. **No public Release, Apple Developer ID signing/notarization or Windows code signing exists yet.**
+As of October 15, 2026, the stable source is macOS Apple Silicon v0.1.0 with passing full app-bundle CI. Intel and Windows preview builds also pass native CI in their respective draft PRs, but real-device acceptance is pending. **A public unsigned Apple Silicon Pre-release now exists at [v0.1.0-preview.1](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1), but a signed/notarized Stable Release and Windows signing are still pending.**
 
 ### Alternative: user-local source bootstrap
 
@@ -62,7 +62,7 @@ This is not an equivalent substitute for a signed and notarized DMG. Native comp
 
 ### Public unsigned Pre-release for developer testing
 
-The maintainer explicitly opted to publish a separate **unsigned, unnotarized GitHub Pre-release**, with an obvious `v0.1.0-preview.1` tag, `UNSIGNED` file names, SHA256 checksums, and per-app macOS **Privacy & Security → Open Anyway** guidance. It is **not a stable release**, does not bypass Gatekeeper globally and is not a substitute for signing or notarization.
+The maintainer has published a separate **unsigned, unnotarized GitHub Pre-release**, with an obvious `v0.1.0-preview.1` tag, `UNSIGNED` file names, SHA256 checksums, and per-app macOS **Privacy & Security → Open Anyway** guidance. It is **not a stable release**, does not bypass Gatekeeper globally and is not a substitute for signing or notarization.
 
 The opt-in `publish-public-preview.yml` workflow accepts only a single docs-only marker commit derived from current main, performs tests and build verification, then publishes a public `prerelease=true` without setting Latest. The existing draft release workflow remains unchanged; signed/notarized stable distribution still requires the checks below.
 
