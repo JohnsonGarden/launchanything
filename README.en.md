@@ -12,6 +12,8 @@ LaunchAnything is a **lightweight, privacy-first, cross-platform desktop proxy l
 
 ## Download and install
 
+> **Unsigned macOS Apple Silicon developer preview:** A prebuilt DMG (no local compilation required) can be downloaded from [GitHub Actions — Developer Preview](https://github.com/JohnsonGarden/launchanything/actions/workflows/developer-preview.yml) (GitHub login may be required). This is **unsigned, unnotarized and not a stable release**. Follow the [checksum and macOS per-app Open Anyway guide](docs/UNSIGNED_PREVIEW.md); never disable Gatekeeper globally. The official Release is still being prepared.
+
 ### One-command Mac installation
 
 **macOS Apple Silicon (M-series) users can install from the official source without first installing Git, Homebrew, Node.js or Rust.**

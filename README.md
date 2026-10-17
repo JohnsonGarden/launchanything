@@ -12,6 +12,8 @@ LaunchAnything 是一款**轻量、隐私优先的跨平台桌面代理启动器
 
 ## 下载与安装
 
+> **macOS M 系列未签名开发预览（测试渠道）：** 可从 [GitHub Actions — Developer Preview](https://github.com/JohnsonGarden/launchanything/actions/workflows/developer-preview.yml) 下载预编译 DMG（不需本地编译、GitHub 登录可能是必需的）。此渠道产物**未签名、未公证、不是稳定版**，需要按 [安全安装与校验步骤](docs/UNSIGNED_PREVIEW.md) 进行 SHA-256 校验和 macOS 单应用「仍要打开」操作；无需全局放开安全限制。正式 Release 仍在筹备中。
+
 ### Mac 快捷安装：复制一条命令
 
 **macOS Apple Silicon（M 系列）现在可以不预装 Git、Homebrew、Node.js 或 Rust，直接通过官方脚本从源码安装。**

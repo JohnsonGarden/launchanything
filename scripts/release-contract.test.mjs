@@ -50,3 +50,33 @@ describe("release workflow safety contract", () => {
     assert.match(workflow, /gh release create/);
   });
 });
+
+
+const previewWorkflow = read("../.github/workflows/developer-preview.yml");
+const previewDoc = read("../docs/UNSIGNED_PREVIEW.md");
+
+describe("unsigned developer-preview workflow safety", () => {
+  it("limits preview builds to opted-in preview branches or manual dispatch", () => {
+    assert.match(previewWorkflow, /workflow_dispatch:/);
+    assert.match(previewWorkflow, /release-preview\/\*\*/);
+    assert.match(previewWorkflow, /contents: read/);
+    assert.doesNotMatch(previewWorkflow, /gh release create|--draft=false|spctl --master-disable|xattr -cr/);
+  });
+  it("builds unsigned arm64 DMG and ZIP, verifies the helper and uploads checksum files", () => {
+    assert.match(previewWorkflow, /uname -m/);
+    assert.match(previewWorkflow, /lipo/);
+    assert.match(previewWorkflow, /launchanything-macos-helper/);
+    assert.match(previewWorkflow, /\.dmg/);
+    assert.match(previewWorkflow, /\.zip/);
+    assert.match(previewWorkflow, /shasum -a 256/);
+    assert.match(previewWorkflow, /actions\/upload-artifact@/);
+    assert.match(previewWorkflow, /retention-days:/);
+  });
+  it("documents per-app exception, checksum validation and unsigned status", () => {
+    assert.match(previewDoc, /SHA256SUMS\.txt/);
+    assert.match(previewDoc, /仍要打开/);
+    assert.match(previewDoc, /Open Anyway/);
+    assert.match(previewDoc, /unsigned|未签名/i);
+    assert.match(previewDoc, /Apple Silicon/);
+  });
+});

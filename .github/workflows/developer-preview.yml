@@ -1,0 +1,124 @@
+name: macOS Apple Silicon developer preview (UNSIGNED)
+
+# A separate opt-in preview lane. Never publishes a public GitHub Release.
+on:
+  push:
+    branches:
+      - 'release-preview/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-unsigned-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unsigned-arm64-dmg:
+    name: Build & verify unsigned arm64 DMG
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Verify native Apple Silicon runner and version alignment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = "Darwin"
+          test "$(uname -m)" = "arm64"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          TAURI_VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          test "$PACKAGE_VERSION" = "$TAURI_VERSION"
+
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Developer preflight
+        run: npm run doctor
+      - name: Release and installer safety contracts
+        run: |
+          npm run test:release-contract
+          npm run test:macos-installer
+          npm run test:macos-installer-e2e
+      - name: Frontend typecheck and tests
+        run: |
+          npm run typecheck
+          npm test
+      - name: Prepare macOS Swift helper before native Rust tests
+        run: npm run prepare:macos
+      - name: macOS launcher tests
+        run: |
+          npm run test:macos-launch
+          npm run test:rust
+      - name: Build unsigned app and DMG
+        env:
+          CI: 'true'
+        run: npm run build
+
+      - name: Validate artifacts and create developer downloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="src-tauri/target/release/bundle/macos/LaunchAnything.app"
+          HELPER="$APP/Contents/Resources/bin/launchanything-macos-helper"
+          test -d "$APP"
+          test -f "$HELPER"
+          APP_BIN="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -print -quit)"
+          test -n "$APP_BIN"
+          xcrun lipo "$APP_BIN" -verify_arch arm64
+          xcrun lipo "$HELPER" -verify_arch arm64
+          DMG="$(find src-tauri/target/release/bundle/dmg -maxdepth 1 -type f -name '*.dmg' -print -quit)"
+          test -n "$DMG"
+          VERSION="$(node -p "require('./package.json').version")"
+          PREFIX="LaunchAnything_v${VERSION}_macos_arm64_UNSIGNED"
+          mkdir -p release-assets
+          cp "$DMG" "release-assets/${PREFIX}.dmg"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "release-assets/${PREFIX}_app.zip"
+          (
+            cd release-assets
+            shasum -a 256 *.dmg *.zip > SHA256SUMS.txt
+            shasum -a 256 -c SHA256SUMS.txt
+          )
+          {
+            echo "LaunchAnything ${VERSION} | unsigned, unnotarized developer preview"
+            echo "Source: https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+            echo "Actions run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "Architecture: macOS arm64 / Apple Silicon only"
+            echo "Do not present this build as signed, notarized, or stable."
+            echo "Installation: https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/UNSIGNED_PREVIEW.md"
+          } > release-assets/BUILD_INFO.txt
+          ls -lh release-assets
+
+      - name: Upload unsigned developer preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: LaunchAnything-v0.1.0-macos-arm64-UNSIGNED
+          path: release-assets/
+          retention-days: 30
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Write download and trust guidance
+        shell: bash
+        run: |
+          {
+            echo "## macOS Apple Silicon unsigned developer preview"
+            echo ""
+            echo "Download the **LaunchAnything-v0.1.0-macos-arm64-UNSIGNED** artifact from this run's **Artifacts** section."
+            echo "Extract the downloaded Actions ZIP; verify \`shasum -a 256 -c SHA256SUMS.txt\`."
+            echo "The DMG and app ZIP are **unsigned and not notarized**; do not present them as a stable Release."
+            echo "To test after a trusted download, attempt to open the app once and use System Settings → Privacy & Security → Open Anyway if macOS blocks an unidentified developer."
+            echo "Never disable Gatekeeper globally. Read docs/UNSIGNED_PREVIEW.md before installing."
+          } >> "$GITHUB_STEP_SUMMARY"
