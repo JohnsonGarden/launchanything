@@ -8,7 +8,7 @@
 
 LaunchAnything 是一款**轻量、隐私优先的跨平台桌面代理启动器**：为不同 APP 设置自己的 HTTP / SOCKS5 本地代理，按需启动应用，**不修改系统全局代理**。界面采用 React、TypeScript、Tailwind 与 shadcn/ui 设计规范，使用简洁的玫瑰粉色系，支持中文 / English 即时切换。
 
-> **2026-10-17 发行状态：** macOS Apple Silicon 和 Intel 两种原生架构都已在真实 Mac 上验证基础启动及代理拉起功能，待发布的 [v0.1.0-preview.2](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2) 将同时提供两套未签名 DMG，并修复“代理协议”和“绑定代理”原生下拉框样式。**两套都未经 Apple 签名与公证，属于开发者 Pre-release，非正式稳定版。** Windows x64 仅提供 CI 测试工件，不公开发布 Windows Release。
+> **2026-10-17 发行状态：** macOS Apple Silicon 和 Intel 两种原生架构都已在真实 Mac 上验证基础启动及代理拉起功能，已公开的 [v0.1.0-preview.2](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2) 将同时提供两套未签名 DMG，并修复“代理协议”和“绑定代理”原生下拉框样式。**两套都未经 Apple 签名与公证，属于开发者 Pre-release，非正式稳定版。** Windows x64 仅提供 CI 测试工件，不公开发布 Windows Release。
 
 ## 下载与安装
 > **Mac 下载入口（未签名 Pre-release）：** [Apple Silicon arm64 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_arm64_UNSIGNED.dmg) · [Intel x86_64 DMG](https://github.com/JohnsonGarden/launchanything/releases/download/v0.1.0-preview.2/LaunchAnything_v0.1.0_preview2_macos_x86_64_UNSIGNED.dmg) · [下载与 SHA-256 校验](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2)。按芯片选择，均无需本地编译；首次启动仅在确认下载可信且属于未识别开发者拦截时，对该应用执行“仍要打开”。
@@ -30,9 +30,9 @@ INSTALLER="$(mktemp "${TMPDIR:-/tmp}/launchanything-installer.XXXXXXXX")" && cur
 
 运行远程脚本前，建议[先查看源码](scripts/install-macos.sh)。`--yes` 表示授权安装用户目录内的依赖。给 Codex / Claude Code 等 Agent 使用时，建议先运行 `bash "$INSTALLER" --check --json` 和 `--plan`，再执行 `--install --yes --no-launch`；遇到退出码 `20` 就等待用户完成系统对话框并重试。详见 **[Agent 完整安装操作手册](docs/AGENT_INSTALL.md)**。
 
-> Intel Mac 可选择尚未真机验收的 `--intel-preview` 进行实验性构建。Windows 客户端使用其独立的开发测试包，**不能**使用此 macOS 安装脚本。不愿本地编译时，Apple Silicon 用户现可从 [公开 Pre-release](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.1) 直接下载未签名测试版；经过 Apple 签名及公证的正式稳定版仍需等待。
+> Intel Mac 现在同样可以下载原生 x86_64 预览 DMG，而不必执行实验性本地编译；Windows 客户端仅提供独立 Actions 测试构建，**不能**使用此 macOS 安装脚本。经 Apple 签名与公证的正式稳定版仍需等待。
 
-**不希望本地编译的用户：** Apple Silicon 已可从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases) 下载未签名的开发预览 DMG，无需 Node.js、Rust、Git 或命令行编译；Intel / Windows 仍处于开发测试阶段。
+**不希望本地编译的用户：** Apple Silicon 和 Intel Mac 都可以从 [GitHub Releases（官方发布页）](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2) 下载对应芯片的未签名 DMG，无需 Node.js、Rust 或本地编译；Windows 仍只开放 Actions 测试包。
 
 | 系统 / 架构 | 当前状态 | 下载 / 验证 |
 |---|---|---|
@@ -42,12 +42,12 @@ INSTALLER="$(mktemp "${TMPDIR:-/tmp}/launchanything-installer.XXXXXXXX")" && cur
 | Linux | 不支持 | 尚无 Linux 客户端 |
 
 ### 体验 Windows / Intel 测试构建
-> **Intel Mac 新版预览打包正在验证：** 最新 `main` 功能（含三套主题与 Applications 默认目录选择器）已移植到 [Intel x86_64 GitHub Actions 构建](https://github.com/JohnsonGarden/launchanything/actions/workflows/macos-intel-preview.yml)，生成原生 Intel 未签名 DMG 和 ZIP。此分支仍需 [Intel Mac 真机验收](docs/INTEL_PREVIEW.md)，不等于正式 Intel 稳定支持。
+> **Intel Mac 测试进展：** Intel x86_64 已通过原生 CI 和基础真机启动/代理拉起测试，现与 arm64 一起发布 [Preview 2](https://github.com/JohnsonGarden/launchanything/releases/tag/v0.1.0-preview.2)。两者仍为未签名、未公证的开发者预览版，不应宣传为 Apple 认证稳定发行。
 
 
 已经生成的**开发工件**在上述 Intel / Windows CI 页面底部的 **Artifacts** 中：
 
-- Intel：`LaunchAnything-macos-intel-unsigned`
+- Intel 历史构建：`LaunchAnything-macos-intel-unsigned`（建议改用上方最新 Release DMG）
 - Windows：`LaunchAnything-windows-x64-unsigned`
 
 需要登录 GitHub 才能从 Actions 下载；当前工件保留期为 **7 天**，过期后需重新运行对应分支的构建。**这些并不是正式发行版**：Intel 的应用尚未经过 Apple 公证；Windows 的未签名安装包可能触发 SmartScreen 提示。请仅在理解风险并信任构建来源时测试，不建议普通用户绕过系统安全检查。
@@ -158,9 +158,9 @@ npm run build
 
 ## 发布与分支策略
 
-- `main`：macOS Apple Silicon 已验收的稳定源码；不合并未经真机验收的 Windows / Intel 功能。
+- `main`：包含已验证的 Apple Silicon 与 Intel 原生构建及共同 UI；Windows 仍保持独立分支，不对外发布正式包。
 - `dev`：与稳定主线保持同步的集成起点。
-- [Intel PR #3](https://github.com/JohnsonGarden/launchanything/pull/3) 和 [Windows PR #4](https://github.com/JohnsonGarden/launchanything/pull/4)：原生 CI 通过，仍为 Draft，待目标平台验收。
+- [Intel PR #13](https://github.com/JohnsonGarden/launchanything/pull/13) 已合并；[Windows PR #4](https://github.com/JohnsonGarden/launchanything/pull/4) 仍为 Draft 且仅构建测试安装包。
 - **Release**：从 `main` 手动生成 macOS arm64 Draft Release，先审核安装包、校验和、签名与公证状态；发布前须完成相应平台验证。已创建公开但未签名的 Apple Silicon Pre-release，尚未发布 Stable Release。
 
 **隐私与安全：** 不要把访问令牌、Cookie、邮箱、认证密钥或完整敏感日志上传到 Issues。macOS helper 需要非 App Sandbox 环境传入新进程启动变量。当前版本不支持凭据管理、云同步或强制代理劫持。
