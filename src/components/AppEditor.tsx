@@ -11,6 +11,7 @@ import { translatedValidationError } from "@/lib/validationI18n";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { FormSelect } from "@/components/ui/select";
 import { Field } from "./ProxyEditor";
 
 const currentPlatform = detectPlatform(typeof navigator === "undefined" ? "" : navigator.userAgent);
@@ -53,7 +54,7 @@ export function AppEditor({ open, initial, profiles, onOpenChange, onSave }: Pro
         <div className="flex gap-2"><Input className="min-w-0 flex-1" placeholder={currentPlatform === "windows" ? "C:\\\\Program Files\\\\Example\\\\Example.exe" : "/Applications/Example.app"} value={form.appPath} onChange={(e) => setForm({ ...form, appPath: e.target.value })}/><Button type="button" variant="secondary" onClick={browse} aria-label={t("appForm.browse")}><FolderOpen size={16}/></Button></div>
       </Field>
       <Field label={t("appForm.displayName")}><Input autoComplete="off" placeholder={t("appForm.namePlaceholder")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}/></Field>
-      <Field label={t("appForm.profile")}><select className="field-select" value={form.profileId} onChange={(e) => setForm({ ...form, profileId: e.target.value })}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name} · {profile.scheme.toUpperCase()}</option>)}</select></Field>
+      <Field label={t("appForm.profile")}><FormSelect ariaLabel={t("appForm.profile")} value={form.profileId} onValueChange={(profileId) => setForm((prev) => ({ ...prev, profileId }))} options={profiles.map((profile) => ({ value: profile.id, label: `${profile.name} · ${profile.scheme.toUpperCase()}` }))} disabled={profiles.length === 0}/></Field>
       <Field label={t("appForm.method")}><div className="grid grid-cols-3 gap-2">{(["environment", "chromium", "combined"] as LaunchMode[]).map((mode) => <button key={mode} type="button" onClick={() => setForm({ ...form, mode })} className={`rounded-[10px] border px-2.5 py-3 text-center text-[11px] font-semibold transition-colors ${form.mode === mode ? "border-[var(--ring)] bg-[var(--primary-subtle)] text-[var(--primary)]" : "border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--primary-subtle)]"}`}>{t(`mode.${mode}`)}</button>)}</div><p className="mt-2 text-[11px] leading-relaxed text-[var(--soft-foreground)]">{t(`mode.${form.mode}Detail`)}</p></Field>
       <ProxyCompatibilityNotice scheme={profiles.find(profile => profile.id === form.profileId)?.scheme} mode={form.mode}/>
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-tinted)] p-3 text-[12px] leading-relaxed text-[var(--muted-foreground)]">{t("appForm.quitting")}</div>
