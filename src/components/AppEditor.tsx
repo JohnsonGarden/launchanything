@@ -11,6 +11,7 @@ import { translatedValidationError } from "@/lib/validationI18n";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { FormSelect } from "@/components/ui/select";
 import { Field } from "./ProxyEditor";
 import { LaunchModeRadioGroup } from "./LaunchModeRadioGroup";
 
@@ -60,7 +61,7 @@ export function AppEditor({ open, initial, profiles, onOpenChange, onSave }: Pro
             </Field>
             <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2">
               <Field label={t("appForm.displayName")}><Input autoComplete="off" placeholder={t("appForm.namePlaceholder")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}/></Field>
-              <Field label={t("appForm.profile")}><select className="field-select" value={form.profileId} onChange={(e) => setForm({ ...form, profileId: e.target.value })}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name} · {profile.scheme.toUpperCase()}</option>)}</select></Field>
+              <Field label={t("appForm.profile")}><FormSelect ariaLabel={t("appForm.profile")} value={form.profileId} onValueChange={(profileId) => setForm((prev) => ({ ...prev, profileId }))} options={profiles.map((profile) => ({ value: profile.id, label: `${profile.name} · ${profile.scheme.toUpperCase()}` }))} disabled={profiles.length === 0}/></Field>
             </div>
             <div className="space-y-2">
               <LaunchModeRadioGroup value={form.mode} onChange={(mode) => setForm((prev) => ({ ...prev, mode }))} label={t("appForm.method")} labels={{environment:t("mode.environment"),chromium:t("mode.chromium"),combined:t("mode.combined")}}/>
