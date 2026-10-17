@@ -21,7 +21,9 @@ describe("dialog selects use shared shadcn/Radix UI", () => {
     expect(html).toContain("rounded-[10px]");
     expect(html).toContain("var(--border)");
     expect(html).toContain("var(--card)");
-    expect(html).not.toContain("<select");
+    // Radix deliberately adds a visually hidden <select> for native form submission.
+    expect(html).toContain('role="combobox"');
+    expect(html).toContain('<select aria-hidden="true" tabindex="-1"');
     expect(html).not.toContain("appearance: auto");
   });
   it("supports empty disabled profile picker without a native select fallback", () => {
