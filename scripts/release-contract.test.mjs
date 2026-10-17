@@ -140,3 +140,35 @@ describe("guarded arm64 and Intel unsigned public preview 2", () => {
     assert.ok(dualNotes.includes("Windows"));
   });
 });
+
+
+const preview3Workflow = read("../.github/workflows/publish-dual-macos-preview3.yml");
+const preview3Notes = read("../docs/releases/public-preview-v0.1.0-preview3.md");
+
+describe("guarded unsigned dual Mac public Preview 3", () => {
+  it("requires a single explicit docs-only marker based on current main", () => {
+    for (const required of [
+      "publish-preview/v0.1.0-preview.3", "PUBLISH-v0.1.0-preview.3.md",
+      "git rev-parse HEAD^", "git diff --name-only", "main_sha",
+    ]) assert.ok(preview3Workflow.includes(required), required);
+  });
+  it("checks both native architecture bundles and checksums before prerelease upload", () => {
+    for (const required of [
+      "macos-latest", "macos-15-intel", "aarch64-apple-darwin",
+      "x86_64-apple-darwin", "xcrun lipo", "SHA256SUMS.txt",
+      "LaunchAnything_v0.1.0_preview3_macos_arm64_UNSIGNED.dmg",
+      "LaunchAnything_v0.1.0_preview3_macos_x86_64_UNSIGNED.dmg",
+      "actions/download-artifact@v4", "gh release create",
+      "--prerelease", "--latest=false",
+    ]) assert.ok(preview3Workflow.includes(required), required);
+    assert.ok(!preview3Workflow.includes("spctl --master-disable"));
+    assert.ok(!preview3Workflow.includes("xattr -cr"));
+  });
+  it("labels the preview as unnotarized and excludes Windows distribution", () => {
+    assert.ok(preview3Notes.includes("UNSIGNED"));
+    assert.ok(preview3Notes.includes("NOT NOTARIZED"));
+    assert.ok(preview3Notes.includes("Windows"));
+    assert.ok(preview3Notes.includes("玫瑰轻语"));
+    assert.ok(preview3Notes.includes("Moonlit Ink"));
+  });
+});
