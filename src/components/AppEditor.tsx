@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { errorMessage } from "@/lib/api";
 import type { AppEntry, LaunchMode, ProxyProfile } from "@/lib/models";
 import { appDisplayName, validateApp } from "@/lib/validation";
+import { applicationPickerOptions } from "@/lib/applicationPicker";
 import { useI18n } from "@/lib/i18n";
 import { translatedValidationError } from "@/lib/validationI18n";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export function AppEditor({ open, initial, profiles, onOpenChange, onSave }: Pro
   useEffect(() => { if (open) setForm(initial ? structuredClone(initial) : blank(profiles)); }, [open, initial, profiles]);
   async function browse() {
     try {
-      const selected = await selectFile({ title: t("appForm.browse"), directory: false, multiple: false });
+      const selected = await selectFile(applicationPickerOptions(t("appForm.browse")));
       if (typeof selected === "string") setForm((prev) => ({ ...prev, appPath: selected, name: prev.name || appDisplayName(selected) }));
     } catch (error) { toast.error(errorMessage(error)); }
   }
