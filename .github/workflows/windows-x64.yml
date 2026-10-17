@@ -1,5 +1,7 @@
 name: Windows x64
 on:
+  push:
+    branches: ['feat/windows-x64-launcher']
   pull_request:
     branches: [main]
   workflow_dispatch:
