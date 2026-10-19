@@ -23,3 +23,7 @@ The three skins use the same shadcn-style semantic token architecture. They chan
 - The Add/Edit Application dialog uses three **independent radio cards**, not adjacent action buttons. The shared shadcn-style dialog has a viewport-bounded scrollable body and visible save/cancel footer.
 - Use `var(--token)` for navigation, input, border, overlays, buttons, status indicators, popovers and dialogs. Avoid rose hardcoded colors in shared UI.
 - Check short-window viewport, scroll and footer visibility, keyboard navigation, radio selection, English/Chinese labels, and all three themes. UI edits should pass typecheck, unit tests, native integration tests and full Tauri packaging before merge.
+
+## Brand icon candidates
+
+- **Scheme A — Folded Path（折叠路径）:** [first shortlisted concept, SVG variants, rationale, palette, and acceptance criteria](icon-scheme-a-folded-path.md). This is a design candidate only; existing Tauri bundle icons remain unchanged until a final choice is approved.
