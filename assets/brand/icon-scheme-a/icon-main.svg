@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="LaunchAnything — Folded Path, primary rose icon">
+<title>LaunchAnything — Folded Path, primary rose icon</title>
+<defs>
+  <linearGradient id="roseBg" x1="100" y1="100" x2="940" y2="940" gradientUnits="userSpaceOnUse"><stop stop-color="#E16C94"/><stop offset=".55" stop-color="#D1244F"/><stop offset="1" stop-color="#B91F46"/></linearGradient>
+  <linearGradient id="cream" x1="330" y1="230" x2="720" y2="745" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFBFC"/><stop offset="1" stop-color="#F9DCE7"/></linearGradient>
+  <linearGradient id="roseInk" x1="320" y1="240" x2="750" y2="755" gradientUnits="userSpaceOnUse"><stop stop-color="#E16C94"/><stop offset=".65" stop-color="#D1244F"/><stop offset="1" stop-color="#B91F46"/></linearGradient>
+  <linearGradient id="softFold" x1="660" y1="584" x2="758" y2="704" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFBFC"/><stop offset="1" stop-color="#E16C94"/></linearGradient>
+</defs>
+<rect x="60" y="60" width="904" height="904" rx="200" fill="url(#roseBg)"/>
+<path d="M338 236 C296 236 263 269 263 312 V662 C263 714 305 754 356 754 H677 C737 754 780 708 780 651 V546 C780 525 762 515 745 527 L673 582 H419 V317 C419 271 382 236 338 236 Z" fill="url(#cream)"/>
+<path d="M668 582 L745 527 C764 514 780 529 780 548 V654 C764 610 722 585 668 582Z" fill="#FFFBFC"/>
+<path d="M633 582 H681 C731 582 769 619 779 662 C775 715 734 754 678 754 H591 C626 726 643 685 643 646 L633 582 Z" fill="#E16C94" opacity=".34"/>
+</svg>
