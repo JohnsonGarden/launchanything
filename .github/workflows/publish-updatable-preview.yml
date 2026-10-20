@@ -173,4 +173,4 @@ jobs:
             --target "${{ needs.gate.outputs.main_sha }}" \
             --prerelease --latest=false \
             --title "LaunchAnything ${{ needs.gate.outputs.tag }} — unsigned macOS preview / signed Tauri updates" \
-            --notes-file docs/UPDATES.md
+            --notes-file docs/releases/updatable-preview.md
