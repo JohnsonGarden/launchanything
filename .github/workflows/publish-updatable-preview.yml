@@ -1,0 +1,176 @@
+name: Publish signed-updater macOS developer preview
+# Manual opt-in, NOT a signed/notarized Apple stable release.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-updatable-preview
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      main_sha: ${{ steps.version.outputs.main_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require unused SemVer pre-release from main
+        id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          VERSION="$(node -p "require('./package.json').version")"
+          test "$VERSION" = "$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          test "$VERSION" = "$(sed -n 's/^version = "\([^"]*\)".*/\1/p' src-tauri/Cargo.toml | head -1)"
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[A-Za-z0-9.-]+$ ]]
+          TAG="v$VERSION"
+          ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "main_sha=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: gate
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+            target: aarch64-apple-darwin
+            bundle: src-tauri/target/release/bundle
+          - runner: macos-15-intel
+            arch: x86_64
+            target: x86_64-apple-darwin
+            bundle: src-tauri/target/x86_64-apple-darwin/release/bundle
+    env:
+      CI: 'true'
+      LAUNCHANYTHING_MACOS_ARCH: ${{ matrix.arch }}
+      LAUNCHANYTHING_UPDATE_PUBKEY: ${{ vars.LAUNCHANYTHING_UPDATE_PUBKEY }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.LAUNCHANYTHING_UPDATER_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.LAUNCHANYTHING_UPDATER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.main_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Fail closed without signing keys or native runners
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LAUNCHANYTHING_UPDATE_PUBKEY"
+          test -n "$TAURI_SIGNING_PRIVATE_KEY"
+          test "$(uname -m)" = "${{ matrix.arch }}"
+      - name: Dependencies and regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run doctor
+          npm run typecheck
+          npm test
+          npm run test:release-contract
+          npm run test:rust
+          npm run prepare:macos
+          npm run test:macos-launch
+          if [ "${{ matrix.arch }}" = x86_64 ]; then npm run test:intel-contract; fi
+      - name: Build signed updater archives and unsigned DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.arch }}" = x86_64 ]; then
+            npm run build:macos-intel -- --config src-tauri/updater.conf.json
+            npm run verify:macos-intel
+          else
+            npm run build -- --config src-tauri/updater.conf.json
+          fi
+      - name: Check architectures, archives, and SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ matrix.bundle }}"
+          ARCH="${{ matrix.arch }}"
+          TAG="${{ needs.gate.outputs.tag }}"
+          APP="$BASE/macos/LaunchAnything.app"
+          HELPER="$APP/Contents/Resources/bin/launchanything-macos-helper"
+          APP_BIN="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -print -quit)"
+          DMG="$(find "$BASE/dmg" -maxdepth 1 -name '*.dmg' -type f -print -quit)"
+          UPDATE="$(find "$BASE/macos" -maxdepth 1 -name '*.app.tar.gz' -type f -print -quit)"
+          test -d "$APP" && test -f "$HELPER"
+          test -n "$APP_BIN" && test -n "$DMG" && test -n "$UPDATE" && test -s "$UPDATE.sig"
+          xcrun lipo "$APP_BIN" -verify_arch "$ARCH"
+          xcrun lipo "$HELPER" -verify_arch "$ARCH"
+          mkdir -p release-assets
+          PREFIX="LaunchAnything_$TAG"
+          cp "$DMG" "release-assets/$PREFIX"_macos_"$ARCH"_UNSIGNED.dmg
+          cp "$UPDATE" "release-assets/$PREFIX"_macos_"$ARCH".app.tar.gz
+          cp "$UPDATE.sig" "release-assets/$PREFIX"_macos_"$ARCH".app.tar.gz.sig
+          printf 'LaunchAnything %s | %s | signed updater archive; macOS app is NOT Apple-signed/notarized\n' "$TAG" "$ARCH" > "release-assets/BUILD_INFO_$ARCH.txt"
+          (cd release-assets && shasum -a 256 *.dmg *.tar.gz *.sig > "SHA256SUMS_$ARCH.txt")
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-update-${{ matrix.arch }}
+          path: release-assets/
+          retention-days: 30
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    needs: [gate, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.main_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: signed-update-*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify checksum files and create static updater manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd release-assets && shasum -a 256 -c SHA256SUMS_arm64.txt && shasum -a 256 -c SHA256SUMS_x86_64.txt)
+          node scripts/build-updater-manifest.mjs release-assets
+          (cd release-assets && sha256sum *.dmg *.tar.gz *.sig updater.json > SHA256SUMS.txt && sha256sum -c SHA256SUMS.txt)
+      - name: Publish only from accepted main to unused tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          test "$CURRENT" = "${{ needs.gate.outputs.main_sha }}"
+          ! gh release view "${{ needs.gate.outputs.tag }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1
+          gh release create "${{ needs.gate.outputs.tag }}" release-assets/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "${{ needs.gate.outputs.main_sha }}" \
+            --prerelease --latest=false \
+            --title "LaunchAnything ${{ needs.gate.outputs.tag }} — unsigned macOS preview / signed Tauri updates" \
+            --notes-file docs/releases/updatable-preview.md
