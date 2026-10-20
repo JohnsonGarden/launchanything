@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { listen } from "@tauri-apps/api/event";
+import { checkGitHubReleases, currentAppVersion, type ReleaseCheck } from "@/lib/updates";
 import {
   Activity, ArrowDownRight, ArrowRight, Blocks, Check, ChevronRight, CircleHelp,
   Command, ExternalLink, Globe2, LayoutGrid, LoaderCircle, LockKeyhole,
@@ -33,6 +35,12 @@ export default function App() {
   const [launching, setLaunching] = useState<string | null>(null);
   const [checking, setChecking] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
+  const [installedVersion, setInstalledVersion] = useState<string | null>(null);
+  const [signedUpdateReady, setSignedUpdateReady] = useState(false);
+  const [releaseCheck, setReleaseCheck] = useState<ReleaseCheck | null>(null);
+  const [updateBusy, setUpdateBusy] = useState<"check" | "install" | null>(null);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [downloadedBytes, setDownloadedBytes] = useState(0);
 
   const reload = useCallback(async () => {
     try { setState(await api.loadState()); setLoadError(null); }
@@ -41,6 +49,31 @@ export default function App() {
   }, []);
 
   useEffect(() => { void reload(); }, [reload]);
+
+  useEffect(() => {
+    let mounted = true;
+    void currentAppVersion().then(async (version) => {
+      if (!mounted) return;
+      setInstalledVersion(version);
+      if (version) {
+        const enabled = await api.signedUpdatesEnabled().catch(() => false);
+        if (mounted) setSignedUpdateReady(enabled);
+      }
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    if (view !== "about" || !installedVersion) return;
+    let cancelled = false;
+    setUpdateBusy("check");
+    setUpdateError(null);
+    void checkGitHubReleases(installedVersion)
+      .then((result) => { if (!cancelled) setReleaseCheck(result); })
+      .catch((error) => { if (!cancelled) setUpdateError(errorMessage(error)); })
+      .finally(() => { if (!cancelled) setUpdateBusy(null); });
+    return () => { cancelled = true; };
+  }, [view, installedVersion]);
   useEffect(() => {
     function onKeys(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -86,6 +119,36 @@ export default function App() {
     finally { setChecking(null); }
   }
 
+  async function refreshUpdates() {
+    if (!installedVersion) return;
+    setUpdateBusy("check");
+    setUpdateError(null);
+    try { setReleaseCheck(await checkGitHubReleases(installedVersion)); }
+    catch (error) { setUpdateError(errorMessage(error)); }
+    finally { setUpdateBusy(null); }
+  }
+
+  async function installUpdate() {
+    const release = releaseCheck?.latest;
+    if (!release || !releaseCheck?.newer || !signedUpdateReady || !release.hasSignedUpdater) return;
+    if (!window.confirm(t("update.confirm", { version: release.tag }))) return;
+    setUpdateBusy("install");
+    setUpdateError(null);
+    setDownloadedBytes(0);
+    let unlisten: (() => void) | undefined;
+    try {
+      unlisten = await listen<{ downloaded: number; total: number | null }>("launchanything-update-progress", (event) => {
+        setDownloadedBytes(event.payload.downloaded);
+      });
+      await api.installSignedUpdate(release.tag);
+    } catch (error) {
+      setUpdateError(errorMessage(error));
+    } finally {
+      unlisten?.();
+      setUpdateBusy(null);
+    }
+  }
+
   const showAppEditor = (initial: AppEntry | null = null) => setAppEditor({ open: true, initial });
   const showProxyEditor = (initial: ProxyProfile | null = null) => setProxyEditor({ open: true, initial });
 
@@ -101,7 +164,7 @@ export default function App() {
       <nav><NavItem icon={CircleHelp} label={t("nav.about")} active={view === "about"} onClick={() => { setView("about"); setQuery(""); }}/></nav>
       <div className="sidebar-bottom">
         <div className="sidebar-callout"><div className="flex items-center gap-2 font-semibold text-[var(--foreground)]"><ShieldCheck size={15} className="text-[var(--primary)]"/> {t("privacy.title")}</div><p className="mt-2 text-[11px] leading-[1.65] text-[var(--soft-foreground)]">{t("privacy.detail")}</p></div>
-        <div className="sidebar-footer"><span className="flex size-7 items-center justify-center rounded-lg bg-[var(--primary-subtle)] text-[var(--primary)]"><Command size={13}/></span><span>LaunchAnything <span className="text-[var(--faint-foreground)]">v0.1</span></span></div>
+        <div className="sidebar-footer"><span className="flex size-7 items-center justify-center rounded-lg bg-[var(--primary-subtle)] text-[var(--primary)]"><Command size={13}/></span><span>LaunchAnything <span className="text-[var(--faint-foreground)]">{installedVersion ? "v" + installedVersion : "—"}</span></span></div>
       </div>
     </aside>
 
@@ -151,6 +214,42 @@ export default function App() {
         {view === "about" && <>
           <div className="page-intro"><div><div className="eyebrow"><ShieldCheck size={13}/> {t("about.eyebrow")}</div><h1>{t("about.title")}<span className="period">.</span></h1><p>{t("about.tagline")}</p></div></div>
           <div className="about-grid"><Info icon={Check} title={t("about.serviceTitle")} description={t("about.serviceDetail")}/><Info icon={LockKeyhole} title={t("about.localTitle")} description={t("about.localDetail")}/><Info icon={Settings2} title={t("about.bestTitle")} description={t("about.bestDetail")}/><Info icon={Activity} title={t("about.guardTitle")} description={t("about.guardDetail")}/></div>
+          <section className="mt-7 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6" aria-label={t("update.title")}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div><h3 className="text-[14px] font-semibold">{t("update.title")}</h3>
+                <p className="mt-2 text-[12px] text-[var(--muted-foreground)]">{t("update.current", { version: installedVersion ? "v" + installedVersion : "—" })}</p>
+              </div>
+              <Button variant="secondary" size="sm" disabled={!installedVersion || !!updateBusy} onClick={() => void refreshUpdates()}>
+                {updateBusy === "check" ? <LoaderCircle size={14} className="animate-spin"/> : <Activity size={14}/>}
+                {t(updateBusy === "check" ? "update.checking" : "update.check")}
+              </Button>
+            </div>
+            <p className="mt-3 text-[11px] text-[var(--soft-foreground)]">{t("update.networkHint")}</p>
+            {updateError && <p role="alert" className="mt-4 text-[12px] text-[var(--destructive)]">{t("update.failed")} {updateError}</p>}
+            {releaseCheck && <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
+              {releaseCheck.latest ? <>
+                <p className="text-[13px] font-semibold">{releaseCheck.newer
+                  ? t("update.found", { version: releaseCheck.latest.tag })
+                  : t("update.upToDate")}</p>
+                <p className="mt-2 text-[12px] text-[var(--muted-foreground)]">
+                  {releaseCheck.latest.tag} · {t(releaseCheck.latest.prerelease ? "update.preview" : "update.stable")}
+                </p>
+                {releaseCheck.newer && <>
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    {releaseCheck.latest.hasSignedUpdater && signedUpdateReady && <Button size="sm" disabled={!!updateBusy} onClick={() => void installUpdate()}>
+                      {updateBusy === "install" && <LoaderCircle size={14} className="animate-spin"/>}
+                      {t(updateBusy === "install" ? "update.installing" : "update.install")}
+                    </Button>}
+                    <a className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--primary)] hover:underline"
+                      href={releaseCheck.latest.url} target="_blank" rel="noreferrer">{t("update.openRelease")} <ExternalLink size={12}/></a>
+                  </div>
+                  {!releaseCheck.latest.hasSignedUpdater && <p className="mt-3 text-[11px] text-[var(--muted-foreground)]">{t("update.manualRequired")}</p>}
+                  {releaseCheck.latest.hasSignedUpdater && !signedUpdateReady && <p className="mt-3 text-[11px] text-[var(--muted-foreground)]">{t("update.noSignedKey")}</p>}
+                  {updateBusy === "install" && <p role="status" className="mt-3 text-[12px] text-[var(--muted-foreground)]">{t("update.progress", { downloaded: (downloadedBytes / 1048576).toFixed(1) })}</p>}
+                </>}
+              </> : <p className="text-[12px] text-[var(--muted-foreground)]">{t("update.noRelease")}</p>}
+            </div>}
+          </section>
           <div className="mt-7 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6"><h3 className="text-[14px] font-semibold">{t("about.compatTitle")}</h3><p className="mt-2 max-w-[700px] text-[12px] leading-[1.8] text-[var(--muted-foreground)]">{t("about.compatDetail")}</p><a className="mt-4 inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--primary)] hover:underline" href="https://github.com/JohnsonGarden/launchanything" target="_blank" rel="noreferrer">{t("about.github")} <ExternalLink size={12}/></a></div>
         </>}
       </div>
