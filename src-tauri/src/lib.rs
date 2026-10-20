@@ -3,6 +3,7 @@ mod launch;
 mod model;
 mod proxy;
 mod store;
+mod updater;
 
 use tauri::Manager;
 
@@ -10,6 +11,7 @@ use tauri::Manager;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let dir = app.path().app_config_dir()?;
             let store = store::AppStore::new(dir).map_err(std::io::Error::other)?;
@@ -24,6 +26,8 @@ pub fn run() {
             commands::delete_app,
             commands::test_proxy,
             commands::launch_app,
+            updater::signed_updates_enabled,
+            updater::install_signed_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running LaunchAnything");
