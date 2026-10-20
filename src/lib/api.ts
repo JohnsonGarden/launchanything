@@ -9,6 +9,8 @@ export const api = {
   deleteApp: (id: string) => invokeNative<AppState>("delete_app", { id }),
   testProxy: (profile: ProxyProfile) => invokeNative<ProxyCheck>("test_proxy", { profile }),
   launchApp: (id: string) => invokeNative<LaunchResult>("launch_app", { id }),
+  signedUpdatesEnabled: () => invokeNative<boolean>("signed_updates_enabled"),
+  installSignedUpdate: (tag: string) => invokeNative<void>("install_signed_update", { tag }),
 };
 
 export function errorMessage(error: unknown): string {
