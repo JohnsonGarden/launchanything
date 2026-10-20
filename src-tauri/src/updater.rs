@@ -2,7 +2,7 @@
 //! The update endpoint is fixed to this repository; signing secrets are never embedded.
 use serde::Serialize;
 use std::time::Duration;
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_updater::UpdaterExt;
 
 use crate::{model::ProxyScheme, store::AppStore};
@@ -92,7 +92,7 @@ pub async fn install_signed_update(
     );
     let mut builder = app.updater_builder()
         .pubkey(PINNED_PUBLIC_KEY)
-        .endpoints(vec![endpoint])
+        .endpoints(vec![reqwest::Url::parse(&endpoint).map_err(|error| error.to_string())?])
         .map_err(|error| error.to_string())?
         .timeout(Duration::from_secs(180));
     if let Some(url) = proxy_url(proxy_profile_id.as_deref(), &store)? {
