@@ -26,6 +26,7 @@ pub fn run() {
             commands::delete_app,
             commands::test_proxy,
             commands::launch_app,
+            updater::fetch_github_releases,
             updater::signed_updates_enabled,
             updater::install_signed_update,
         ])
