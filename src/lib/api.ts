@@ -10,7 +10,8 @@ export const api = {
   testProxy: (profile: ProxyProfile) => invokeNative<ProxyCheck>("test_proxy", { profile }),
   launchApp: (id: string) => invokeNative<LaunchResult>("launch_app", { id }),
   signedUpdatesEnabled: () => invokeNative<boolean>("signed_updates_enabled"),
-  installSignedUpdate: (tag: string) => invokeNative<void>("install_signed_update", { tag }),
+  fetchGitHubReleases: (proxyProfileId: string | null) => invokeNative<unknown>("fetch_github_releases", { proxyProfileId }),
+  installSignedUpdate: (tag: string, proxyProfileId: string | null) => invokeNative<void>("install_signed_update", { tag, proxyProfileId }),
 };
 
 export function errorMessage(error: unknown): string {
