@@ -2,7 +2,6 @@ import { getVersion } from "@tauri-apps/api/app";
 import { isTauri } from "@tauri-apps/api/core";
 
 export const RELEASES_URL = "https://github.com/JohnsonGarden/launchanything/releases";
-const API_URL = "https://api.github.com/repos/JohnsonGarden/launchanything/releases?per_page=50";
 
 type Version = { core: [number, number, number]; prerelease: string[] };
 
@@ -92,22 +91,3 @@ export async function currentAppVersion(): Promise<string | null> {
   return isTauri() ? getVersion() : null;
 }
 
-export async function checkGitHubReleases(
-  current: string,
-  fetcher: typeof fetch = fetch,
-): Promise<ReleaseCheck> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
-  try {
-    const response = await fetcher(API_URL, {
-      method: "GET",
-      headers: { Accept: "application/vnd.github+json" },
-      signal: controller.signal,
-      cache: "no-store",
-    });
-    if (!response.ok) throw new Error("GitHub Releases HTTP " + response.status);
-    return pickLatestRelease(await response.json(), current);
-  } finally {
-    clearTimeout(timeout);
-  }
-}
