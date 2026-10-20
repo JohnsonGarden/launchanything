@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { listen } from "@tauri-apps/api/event";
-import { checkGitHubReleases, currentAppVersion, type ReleaseCheck } from "@/lib/updates";
+import { pickLatestRelease, currentAppVersion, type ReleaseCheck } from "@/lib/updates";
 import {
   Activity, ArrowDownRight, ArrowRight, Blocks, Check, ChevronRight, CircleHelp,
   Command, ExternalLink, Globe2, LayoutGrid, LoaderCircle, LockKeyhole,
@@ -17,6 +17,7 @@ import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { FormSelect } from "@/components/ui/select";
 import { AppEditor } from "@/components/AppEditor";
 import { ProxyEditor } from "@/components/ProxyEditor";
 
@@ -41,6 +42,7 @@ export default function App() {
   const [updateBusy, setUpdateBusy] = useState<"check" | "install" | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [downloadedBytes, setDownloadedBytes] = useState(0);
+  const [updateProxy, setUpdateProxy] = useState("system");
 
   const reload = useCallback(async () => {
     try { setState(await api.loadState()); setLoadError(null); }
@@ -68,12 +70,12 @@ export default function App() {
     let cancelled = false;
     setUpdateBusy("check");
     setUpdateError(null);
-    void checkGitHubReleases(installedVersion)
-      .then((result) => { if (!cancelled) setReleaseCheck(result); })
+    void api.fetchGitHubReleases(updateProxy === "system" ? null : updateProxy)
+      .then((payload) => { if (!cancelled) setReleaseCheck(pickLatestRelease(payload, installedVersion)); })
       .catch((error) => { if (!cancelled) setUpdateError(errorMessage(error)); })
       .finally(() => { if (!cancelled) setUpdateBusy(null); });
     return () => { cancelled = true; };
-  }, [view, installedVersion]);
+  }, [view, installedVersion, updateProxy]);
   useEffect(() => {
     function onKeys(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -123,7 +125,7 @@ export default function App() {
     if (!installedVersion) return;
     setUpdateBusy("check");
     setUpdateError(null);
-    try { setReleaseCheck(await checkGitHubReleases(installedVersion)); }
+    try { setReleaseCheck(pickLatestRelease(await api.fetchGitHubReleases(updateProxy === "system" ? null : updateProxy), installedVersion)); }
     catch (error) { setUpdateError(errorMessage(error)); }
     finally { setUpdateBusy(null); }
   }
@@ -140,7 +142,7 @@ export default function App() {
       unlisten = await listen<{ downloaded: number; total: number | null }>("launchanything-update-progress", (event) => {
         setDownloadedBytes(event.payload.downloaded);
       });
-      await api.installSignedUpdate(release.tag);
+      await api.installSignedUpdate(release.tag, updateProxy === "system" ? null : updateProxy);
     } catch (error) {
       setUpdateError(errorMessage(error));
     } finally {
@@ -225,6 +227,14 @@ export default function App() {
               </Button>
             </div>
             <p className="mt-3 text-[11px] text-[var(--soft-foreground)]">{t("update.networkHint")}</p>
+            <div className="mt-3 max-w-[360px]">
+              <p className="mb-2 text-[11px] font-semibold text-[var(--muted-foreground)]">{t("update.networkRoute")}</p>
+              <FormSelect ariaLabel={t("update.networkRoute")} value={updateProxy} onValueChange={setUpdateProxy}
+                disabled={updateBusy === "install"} options={[
+                  { value: "system", label: t("update.systemRoute") },
+                  ...state.profiles.map((profile) => ({ value: profile.id, label: profile.name + " · " + profile.scheme.toUpperCase() })),
+                ]}/>
+            </div>
             {updateError && <p role="alert" className="mt-4 text-[12px] text-[var(--destructive)]">{t("update.failed")} {updateError}</p>}
             {releaseCheck && <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
               {releaseCheck.latest ? <>
