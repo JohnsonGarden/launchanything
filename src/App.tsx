@@ -31,6 +31,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<{ kind: "runtime" | "backend"; detail: string } | null>(null);
   const [launching, setLaunching] = useState<string | null>(null);
+  const [pids, setPids] = useState<Record<string, number>>({});
   const [checking, setChecking] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
 
@@ -71,6 +72,7 @@ export default function App() {
     setLaunching(entry.id);
     try {
       const result = await api.launchApp(entry.id);
+      setPids(old => ({ ...old, [entry.id]: result.pid }));
       toast.success(t("apps.launched", { name: entry.name }), { description: t("apps.launchedDetail", { pid: result.pid, message: result.message }), duration: 6500 });
     } catch (error) { toast.error(t("apps.launchFailed", { name: entry.name }), { description: errorMessage(error), duration: 6500 }); }
     finally { setLaunching(null); }
@@ -82,6 +84,28 @@ export default function App() {
       setChecks((old) => ({ ...old, [profile.id]: result.reachable }));
       if (result.reachable) toast.success(t("proxy.portReachable", { name: profile.name }), { description: result.message });
       else toast.error(t("proxy.offline", { name: profile.name }), { description: result.message });
+    } catch (error) { toast.error(errorMessage(error)); }
+    finally { setChecking(null); }
+  }
+
+  async function observeApp(entry: AppEntry) {
+    const zh = locale === "zh-CN";
+    try {
+      const result = await api.observeProcess(entry.id, pids[entry.id]);
+      const message = (zh ? "环境匹配：" : "Environment match: ") + String(result.proxyEnvironmentMatches) + "\n" +
+        (zh ? "TCP 快照（非回环连接可能绕行，不含子进程、UDP 或短连接）：" : "TCP snapshot (non-loopback may bypass; excludes helpers, UDP and brief flows): ") + "\n" +
+        (result.observedConnections.join("\n") || (zh ? "未观察到连接，不能证明无绕行" : "No observed connections; not proof of routing"));
+      window.alert(message);
+      if (result.suspectedBypass) toast.warning(zh ? "观察到疑似绕行连接" : "Possible proxy bypass observed");
+    } catch (error) { toast.error(errorMessage(error)); }
+  }
+  async function probeEgress(profile: ProxyProfile) {
+    const zh = locale === "zh-CN";
+    if (!window.confirm(zh ? "通过所选代理访问 Cloudflare，检测出口 IP 和地区？这不是应用流量验证。" : "Contact Cloudflare through this proxy to check its exit IP and country? This does not verify app traffic.")) return;
+    setChecking(profile.id);
+    try {
+      const result = await api.probeEgress(profile);
+      toast.success(zh ? "代理出口检测成功" : "Proxy egress probe succeeded", { description: result.ip + " · " + result.country });
     } catch (error) { toast.error(errorMessage(error)); }
     finally { setChecking(null); }
   }
@@ -132,7 +156,7 @@ export default function App() {
               <div className="min-w-0 flex-1"><div className="truncate text-[13px] font-semibold text-[var(--foreground)]">{entry.name}</div><div className="mt-1 truncate text-[11px] text-[var(--soft-foreground)]" title={entry.appPath}>{entry.appPath}</div></div>
               <div className="hidden min-w-[155px] max-w-[200px] shrink-0 md:block"><div className="truncate text-[12px] font-medium text-[var(--muted-foreground)]">{profile?.name ?? t("apps.missingProfile")}</div><div className="mt-1 truncate font-mono text-[10px] text-[var(--faint-foreground)]">{profile ? displayEndpoint(profile) : "—"}</div></div>
               <Badge className="hidden min-w-[110px] justify-center xl:inline-flex">{t(`mode.${entry.mode}`)}</Badge>
-              <div className="ml-2 flex shrink-0 items-center gap-1"><Button variant="ghost" size="icon" title={t("apps.edit")} aria-label={t("apps.editNamed", { name: entry.name })} onClick={() => showAppEditor(entry)}><Pencil size={15}/></Button><Button variant="ghost" size="icon" title={t("apps.remove")} aria-label={t("apps.removeNamed", { name: entry.name })} onClick={() => void removeApp(entry)}><Trash2 size={15}/></Button><Button size="sm" className="ml-2" disabled={launching === entry.id} onClick={() => void launch(entry)}>{launching === entry.id ? <LoaderCircle size={13} className="animate-spin"/> : <Play size={13} fill="currentColor"/>} {t("apps.launch")}</Button></div>
+              <div className="ml-2 flex shrink-0 items-center gap-1">{pids[entry.id] && <Button variant="ghost" size="icon" title="Inspect connections / 检查连接" aria-label="Inspect connections / 检查连接" onClick={() => void observeApp(entry)}><Activity size={15}/></Button>}<Button variant="ghost" size="icon" title={t("apps.edit")} aria-label={t("apps.editNamed", { name: entry.name })} onClick={() => showAppEditor(entry)}><Pencil size={15}/></Button><Button variant="ghost" size="icon" title={t("apps.remove")} aria-label={t("apps.removeNamed", { name: entry.name })} onClick={() => void removeApp(entry)}><Trash2 size={15}/></Button><Button size="sm" className="ml-2" disabled={launching === entry.id} onClick={() => void launch(entry)}>{launching === entry.id ? <LoaderCircle size={13} className="animate-spin"/> : <Play size={13} fill="currentColor"/>} {t("apps.launch")}</Button></div>
             </div>;
           })}</div> : <Empty title={state.apps.length && query ? t("apps.emptySearch") : t("apps.emptyTitle")} description={state.apps.length && query ? t("apps.emptySearchDetail") : t("apps.emptyDetail")} action={state.apps.length && query ? t("apps.clearSearch") : t("apps.addFirst")} onClick={() => state.apps.length && query ? setQuery("") : showAppEditor()}/>} 
           <div className="help-strip"><div className="help-strip-icon"><Activity size={18}/></div><div><strong>{t("apps.routingTitle")}</strong><p>{t("apps.routingDetail")}</p></div><button onClick={() => setView("about")} className="ml-auto flex shrink-0 items-center gap-1 text-[12px] font-semibold text-[var(--primary)] hover:underline">{t("common.learnMore")} <ArrowRight size={13}/></button></div>
@@ -144,7 +168,7 @@ export default function App() {
             <div className="flex items-start justify-between"><div className="proxy-avatar"><Waypoints size={20}/></div><Badge className="uppercase">{profile.scheme}</Badge></div>
             <h3 className="mt-5 truncate text-[15px] font-semibold text-[var(--foreground)]">{profile.name}</h3>
             <div className="mt-1 font-mono text-[12px] text-[var(--soft-foreground)]">{displayEndpoint(profile)}</div>
-            <div className="mt-5 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-4"><span className={`size-2 rounded-full ${checks[profile.id] === undefined ? "bg-[var(--border-strong)]" : checks[profile.id] ? "bg-[var(--success)]" : "bg-[var(--destructive)]"}`}/><span className="text-[11px] text-[var(--muted-foreground)]">{checks[profile.id] === undefined ? t("proxy.notTested") : checks[profile.id] ? t("proxy.reachable") : t("proxy.unreachable")}</span><div className="ml-auto flex gap-0.5"><Button variant="ghost" size="icon" aria-label={t("proxy.testNamed", { name: profile.name })} title={t("proxy.testPort")} onClick={() => void testProfile(profile)} disabled={checking === profile.id}>{checking === profile.id ? <LoaderCircle size={15} className="animate-spin"/> : <Activity size={15}/>}</Button><Button variant="ghost" size="icon" aria-label={t("proxy.editNamed", { name: profile.name })} onClick={() => showProxyEditor(profile)}><Pencil size={15}/></Button><Button variant="ghost" size="icon" aria-label={t("proxy.deleteNamed", { name: profile.name })} onClick={() => void removeProfile(profile)}><Trash2 size={15}/></Button></div></div>
+            <div className="mt-5 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-4"><span className={`size-2 rounded-full ${checks[profile.id] === undefined ? "bg-[var(--border-strong)]" : checks[profile.id] ? "bg-[var(--success)]" : "bg-[var(--destructive)]"}`}/><span className="text-[11px] text-[var(--muted-foreground)]">{checks[profile.id] === undefined ? t("proxy.notTested") : checks[profile.id] ? t("proxy.reachable") : t("proxy.unreachable")}</span><div className="ml-auto flex gap-0.5"><Button variant="ghost" size="icon" title="Exit IP / 出口 IP" aria-label="Exit IP / 出口 IP" disabled={checking !== null} onClick={() => void probeEgress(profile)}><Globe2 size={15}/></Button><Button variant="ghost" size="icon" aria-label={t("proxy.testNamed", { name: profile.name })} title={t("proxy.testPort")} onClick={() => void testProfile(profile)} disabled={checking === profile.id}>{checking === profile.id ? <LoaderCircle size={15} className="animate-spin"/> : <Activity size={15}/>}</Button><Button variant="ghost" size="icon" aria-label={t("proxy.editNamed", { name: profile.name })} onClick={() => showProxyEditor(profile)}><Pencil size={15}/></Button><Button variant="ghost" size="icon" aria-label={t("proxy.deleteNamed", { name: profile.name })} onClick={() => void removeProfile(profile)}><Trash2 size={15}/></Button></div></div>
           </div>)}</div> : <Empty title={t("proxy.empty")} description={t("proxy.emptyDetail")} action={t("proxy.new")} onClick={() => showProxyEditor()}/>}
           <div className="help-strip"><div className="help-strip-icon"><ArrowDownRight size={18}/></div><div><strong>{t("proxy.existingTitle")}</strong><p>{t("proxy.existingDetail")}</p></div></div>
         </>}
