@@ -84,3 +84,9 @@ pub fn launch_app(id: String, app: AppHandle, store: State<'_, AppStore>) -> Res
     }
     launch(&app, entry, profile)
 }
+
+#[tauri::command]
+pub async fn probe_egress(profile: ProxyProfile) -> Result<crate::diagnostics::EgressProbe, String> {
+    tauri::async_runtime::spawn_blocking(move || crate::diagnostics::probe(&profile))
+        .await.map_err(|e| e.to_string())?
+}

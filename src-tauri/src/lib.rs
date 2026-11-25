@@ -1,4 +1,5 @@
 mod commands;
+mod diagnostics;
 mod launch;
 mod model;
 mod proxy;
@@ -23,6 +24,7 @@ pub fn run() {
             commands::save_app,
             commands::delete_app,
             commands::test_proxy,
+            commands::probe_egress,
             commands::launch_app,
         ])
         .run(tauri::generate_context!())

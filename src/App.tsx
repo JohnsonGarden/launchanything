@@ -86,6 +86,17 @@ export default function App() {
     finally { setChecking(null); }
   }
 
+  async function probeEgress(profile: ProxyProfile) {
+    const zh = locale === "zh";
+    if (!window.confirm(zh ? "通过所选代理访问 Cloudflare，检测出口 IP 和地区？这不是应用流量验证。" : "Contact Cloudflare through this proxy to check its exit IP and country? This does not verify app traffic.")) return;
+    setChecking(profile.id);
+    try {
+      const result = await api.probeEgress(profile);
+      toast.success(zh ? "代理出口检测成功" : "Proxy egress probe succeeded", { description: result.ip + " · " + result.country });
+    } catch (error) { toast.error(errorMessage(error)); }
+    finally { setChecking(null); }
+  }
+
   const showAppEditor = (initial: AppEntry | null = null) => setAppEditor({ open: true, initial });
   const showProxyEditor = (initial: ProxyProfile | null = null) => setProxyEditor({ open: true, initial });
 
@@ -144,7 +155,7 @@ export default function App() {
             <div className="flex items-start justify-between"><div className="proxy-avatar"><Waypoints size={20}/></div><Badge className="uppercase">{profile.scheme}</Badge></div>
             <h3 className="mt-5 truncate text-[15px] font-semibold text-[var(--foreground)]">{profile.name}</h3>
             <div className="mt-1 font-mono text-[12px] text-[var(--soft-foreground)]">{displayEndpoint(profile)}</div>
-            <div className="mt-5 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-4"><span className={`size-2 rounded-full ${checks[profile.id] === undefined ? "bg-[var(--border-strong)]" : checks[profile.id] ? "bg-[var(--success)]" : "bg-[var(--destructive)]"}`}/><span className="text-[11px] text-[var(--muted-foreground)]">{checks[profile.id] === undefined ? t("proxy.notTested") : checks[profile.id] ? t("proxy.reachable") : t("proxy.unreachable")}</span><div className="ml-auto flex gap-0.5"><Button variant="ghost" size="icon" aria-label={t("proxy.testNamed", { name: profile.name })} title={t("proxy.testPort")} onClick={() => void testProfile(profile)} disabled={checking === profile.id}>{checking === profile.id ? <LoaderCircle size={15} className="animate-spin"/> : <Activity size={15}/>}</Button><Button variant="ghost" size="icon" aria-label={t("proxy.editNamed", { name: profile.name })} onClick={() => showProxyEditor(profile)}><Pencil size={15}/></Button><Button variant="ghost" size="icon" aria-label={t("proxy.deleteNamed", { name: profile.name })} onClick={() => void removeProfile(profile)}><Trash2 size={15}/></Button></div></div>
+            <div className="mt-5 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-4"><span className={`size-2 rounded-full ${checks[profile.id] === undefined ? "bg-[var(--border-strong)]" : checks[profile.id] ? "bg-[var(--success)]" : "bg-[var(--destructive)]"}`}/><span className="text-[11px] text-[var(--muted-foreground)]">{checks[profile.id] === undefined ? t("proxy.notTested") : checks[profile.id] ? t("proxy.reachable") : t("proxy.unreachable")}</span><div className="ml-auto flex gap-0.5"><Button variant="ghost" size="icon" title="Exit IP / 出口 IP" aria-label="Exit IP / 出口 IP" disabled={checking !== null} onClick={() => void probeEgress(profile)}><Globe2 size={15}/></Button><Button variant="ghost" size="icon" aria-label={t("proxy.testNamed", { name: profile.name })} title={t("proxy.testPort")} onClick={() => void testProfile(profile)} disabled={checking === profile.id}>{checking === profile.id ? <LoaderCircle size={15} className="animate-spin"/> : <Activity size={15}/>}</Button><Button variant="ghost" size="icon" aria-label={t("proxy.editNamed", { name: profile.name })} onClick={() => showProxyEditor(profile)}><Pencil size={15}/></Button><Button variant="ghost" size="icon" aria-label={t("proxy.deleteNamed", { name: profile.name })} onClick={() => void removeProfile(profile)}><Trash2 size={15}/></Button></div></div>
           </div>)}</div> : <Empty title={t("proxy.empty")} description={t("proxy.emptyDetail")} action={t("proxy.new")} onClick={() => showProxyEditor()}/>}
           <div className="help-strip"><div className="help-strip-icon"><ArrowDownRight size={18}/></div><div><strong>{t("proxy.existingTitle")}</strong><p>{t("proxy.existingDetail")}</p></div></div>
         </>}

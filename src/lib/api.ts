@@ -8,6 +8,7 @@ export const api = {
   saveApp: (entry: AppEntry) => invokeNative<AppState>("save_app", { entry }),
   deleteApp: (id: string) => invokeNative<AppState>("delete_app", { id }),
   testProxy: (profile: ProxyProfile) => invokeNative<ProxyCheck>("test_proxy", { profile }),
+  probeEgress: (profile: ProxyProfile) => invokeNative<{ ip: string; country: string }>("probe_egress", { profile }),
   launchApp: (id: string) => invokeNative<LaunchResult>("launch_app", { id }),
 };
 
