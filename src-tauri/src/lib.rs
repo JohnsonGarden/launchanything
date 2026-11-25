@@ -25,6 +25,7 @@ pub fn run() {
             commands::delete_app,
             commands::test_proxy,
             commands::probe_egress,
+            commands::observe_process,
             commands::launch_app,
         ])
         .run(tauri::generate_context!())

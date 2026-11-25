@@ -56,3 +56,72 @@ mod tests {
         }
     }
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProcessObservation {
+    pub proxy_environment_matches: bool,
+    pub observed_connections: Vec<String>,
+    pub suspected_bypass: bool,
+}
+
+#[cfg(target_os = "macos")]
+pub fn observe(pid: i32, entry: &crate::model::AppEntry, profile: &ProxyProfile) -> Result<ProcessObservation, String> {
+    if pid <= 0 { return Err("Invalid PID.".into()); }
+    // Check executable path before inspecting; do not expose the environment.
+    let process = Command::new("/bin/ps").args(["-p", &pid.to_string(), "-o", "comm="])
+        .output().map_err(|_| "Process inspection unavailable.")?;
+    let executable = String::from_utf8_lossy(&process.stdout);
+    let path = std::fs::canonicalize(&entry.app_path).map_err(|_| "Application missing.")?;
+    let prefix = format!("{}/Contents/", path.display());
+    if !process.status.success() || !executable.trim().starts_with(&prefix) {
+        return Err("Process is no longer the selected app; relaunch to inspect.".into());
+    }
+    let env = Command::new("/bin/ps").args(["eww", "-p", &pid.to_string(), "-o", "command="])
+        .output().map_err(|_| "Environment inspection unavailable.")?;
+    if !env.status.success() { return Err("Environment inspection failed.".into()); }
+    let text = String::from_utf8_lossy(&env.stdout);
+    let plan = crate::proxy::build_launch_plan(profile, &entry.mode)?;
+    let matches = !plan.environment.is_empty() && plan.environment.iter()
+        .all(|(key, value)| text.split_whitespace().any(|part| part == format!("{key}={value}")));
+    let sockets = Command::new("/usr/sbin/lsof").args(["-nP", "-a", "-p", &pid.to_string(), "-iTCP", "-sTCP:ESTABLISHED", "-Fn"])
+        .output().map_err(|_| "Socket inspection unavailable.")?;
+    // lsof exits 1 on no matches; never treat no samples as a clean bill of health.
+    if !sockets.status.success() && (!sockets.stderr.is_empty() || sockets.status.code() != Some(1)) {
+        return Err("Socket inspection failed.".into());
+    }
+    let connections: Vec<String> = String::from_utf8_lossy(&sockets.stdout).lines()
+        .filter_map(|line| line.strip_prefix('n'))
+        .filter_map(|line| line.split_once("->").map(|(_, remote)| remote.to_owned()))
+        .collect();
+    let bypass = connections.iter().any(|remote| suspected_remote(remote, profile));
+    Ok(ProcessObservation { proxy_environment_matches: matches, observed_connections: connections, suspected_bypass: bypass })
+}
+
+fn suspected_remote(remote: &str, profile: &ProxyProfile) -> bool {
+    let Ok(addr) = remote.parse::<std::net::SocketAddr>() else { return false };
+    if addr.ip().is_loopback() { return false; }
+    if let Ok(proxy_ip) = profile.host.trim_matches(['[', ']']).parse::<std::net::IpAddr>() {
+        if addr.ip() == proxy_ip && addr.port() == profile.port { return false; }
+    }
+    // Conservative: flag non-loopback TCP endpoints, not proven public IP leaks.
+    true
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn observe(_: i32, _: &crate::model::AppEntry, _: &ProxyProfile) -> Result<ProcessObservation, String> {
+    Err("Process observation requires macOS.".into())
+}
+
+#[cfg(test)]
+mod observation_tests {
+    use super::*;
+    #[test]
+    fn distinguishes_loopback_from_possible_bypass() {
+        let profile = crate::model::AppState::default().profiles.remove(0);
+        assert!(!suspected_remote("127.0.0.1:7890", &profile));
+        assert!(!suspected_remote("[::1]:7890", &profile));
+        assert!(suspected_remote("192.0.2.1:443", &profile));
+        assert!(!suspected_remote("unknown", &profile));
+    }
+}

@@ -90,3 +90,11 @@ pub async fn probe_egress(profile: ProxyProfile) -> Result<crate::diagnostics::E
     tauri::async_runtime::spawn_blocking(move || crate::diagnostics::probe(&profile))
         .await.map_err(|e| e.to_string())?
 }
+
+#[tauri::command]
+pub async fn observe_process(id: String, pid: i32, store: State<'_, AppStore>) -> Result<crate::diagnostics::ProcessObservation, String> {
+    let state = store.snapshot()?;
+    let entry = state.apps.into_iter().find(|a| a.id == id).ok_or("Application not found.")?;
+    let profile = state.profiles.into_iter().find(|p| p.id == entry.profile_id).ok_or("Proxy profile not found.")?;
+    tauri::async_runtime::spawn_blocking(move || crate::diagnostics::observe(pid, &entry, &profile)).await.map_err(|e| e.to_string())?
+}

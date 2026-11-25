@@ -9,6 +9,7 @@ export const api = {
   deleteApp: (id: string) => invokeNative<AppState>("delete_app", { id }),
   testProxy: (profile: ProxyProfile) => invokeNative<ProxyCheck>("test_proxy", { profile }),
   probeEgress: (profile: ProxyProfile) => invokeNative<{ ip: string; country: string }>("probe_egress", { profile }),
+  observeProcess: (id: string, pid: number) => invokeNative<{ proxyEnvironmentMatches: boolean; observedConnections: string[]; suspectedBypass: boolean }>("observe_process", { id, pid }),
   launchApp: (id: string) => invokeNative<LaunchResult>("launch_app", { id }),
 };
 
